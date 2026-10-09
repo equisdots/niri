@@ -38,10 +38,13 @@ layout {
     // the focus-ring (active window only) is disabled so no double ring shows.
     // The colors here are the static fallback; generated/theme-colors.kdl
     // overrides them from the active palette.
+    // Neutral grey borders (the shell refines these from the active palette at
+    // runtime via generated/borders.kdl). The loud palette accent is NOT used
+    // for the active border, so the border stays harmonious across palettes.
     border {
         on
         width 2
-        active-color "#fc618dee"
+        active-color "#7e7b82ee"
         inactive-color "#69676caa"
     }
 

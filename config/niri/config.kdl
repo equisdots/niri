@@ -84,6 +84,9 @@ xwayland-satellite {
 // these sit after the modules AND after the top-level options above: the
 // palette border colors, generated effects and saved outputs take precedence.
 include optional=true "generated/theme-colors.kdl"
+// The shell backend writes the border colours here (Compositor.setWindowBorders);
+// included AFTER theme-colors so it wins if both files exist.
+include optional=true "generated/borders.kdl"
 include optional=true "generated/theme-effects.kdl"
 include optional=true "generated/outputs.kdl"
 include optional=true "generated/user-binds.kdl"
