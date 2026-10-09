@@ -55,6 +55,12 @@ binds {
     // Hyprland Super+Shift+Space was window.pin, which niri does not have. It
     // is repurposed to toggling the focused column's tabbed display.
     Super+Shift+Space { toggle-column-tabbed-display; }
+    // Fullscreen / maximize. The niri defaults (Mod+F / Mod+Shift+F) collide
+    // with the app binds above, so they live on Super+Shift+F / Super+Shift+M.
+    Super+Shift+F { fullscreen-window; }
+    Super+Shift+M { maximize-column; }
+    // niri's built-in hotkey help overlay.
+    Super+Slash   { show-hotkey-overlay; }
 
     // ------------------------------------------------------ lock / logout / power
     // Lock moved from Hyprland's Super+L (which niri needs for focus-right).
