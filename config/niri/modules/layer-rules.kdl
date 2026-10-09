@@ -1,29 +1,29 @@
 // ============================================================================
 // Layer rules
 // ============================================================================
-// Translated from config/hypr/layers.lua: backdrop blur for the Quickshell
-// layer surfaces (the "glass" effect).
+// Translated from config/hypr/layers.lua (backdrop blur for the Quickshell
+// layer surfaces). Under Hyprland this used `layerrule = blur, ignore_alpha`.
 //
-// Hyprland used a namespace-scoped layer blur with ignore_alpha = 0.15. niri
-// uses a per-surface background-effect (Since 26.04); the global strength and
-// noise come from the `blur {}` block in config.kdl. The shell controls visible
-// transparency through settings.json "glass" (background alpha), so the blur
-// stays xray and saturation is only a slight boost.
+// niri 26.04 has NO `ignore_alpha` equivalent for forced blur: a layer rule
+// with `background-effect { blur true }` blurs the WHOLE rectangle of the
+// surface, including its fully transparent areas. The Quickshell panels and
+// the app launcher are large, mostly transparent overlay surfaces, so forcing
+// blur on them painted a full-height blur sheet over the desktop whenever a
+// panel opened.
 //
-// Multiple `match namespace` directives inside one rule are OR-ed, so this one
-// rule covers every Quickshell namespace.
+// Fix: do not force blur on the shell's surfaces. niri still blurs any surface
+// that requests it through the `ext-background-effect` protocol, and the shell
+// keeps its own translucency (settings.json "glass"). If you want a narrow
+// glass bar later, re-enable the rule below scoped ONLY to the bar namespace
+// (`quickshell`), never to the popup/overlay namespaces.
 // ============================================================================
 
-layer-rule {
-    match namespace="^qs-master$"           // popups, menus, bar editor (ui/Main.qml)
-    match namespace="^quickshell$"          // the bar (PanelWindow default namespace)
-    match namespace="^qs-floating-overlay$" // floating sidebar
-    match namespace="^qs-popups$"           // notifications
-    match namespace="^qs-widget-"           // desktop widgets
-
-    background-effect {
-        blur true
-        xray true
-        saturation 1.1
-    }
-}
+// layer-rule {
+//     match namespace="^quickshell$"
+//
+//     background-effect {
+//         blur true
+//         xray true
+//         saturation 1.1
+//     }
+// }
