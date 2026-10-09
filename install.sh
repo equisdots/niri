@@ -83,16 +83,20 @@ detect_distro() {
 
 # --- Package installation ---------------------------------------------------
 CORE_ARCH=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle mako jq grim slurp wl-clipboard pipewire wireplumber)
+    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
 OPT_ARCH=(satty)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle mako jq grim slurp wl-clipboard pipewire wireplumber)
+    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
 OPT_FEDORA=(satty)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle mako-notifier jq grim slurp wl-clipboard pipewire wireplumber)
+    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
 OPT_DEBIAN=(satty)
+# NOTE: no separate notification daemon (mako/dunst) is installed on purpose.
+# The Quickshell shell registers org.freedesktop.Notifications itself; a second
+# daemon would win the D-Bus name and serve notifications with its own colours
+# instead of the active palette.
 
 sudo_cmd() {
     if [[ "$(id -u)" == "0" ]]; then
@@ -107,7 +111,7 @@ sudo_cmd() {
 install_packages() {
     [[ "$PKG" == "unknown" ]] && { warn "unknown distro; install packages manually"; return 0; }
 
-    info "installing packages with $PKG (niri, portals, swayidle, notification daemon, capture tools)"
+    info "installing packages with $PKG (niri, portals, swayidle, capture tools)"
     case "$PKG" in
         pacman)
             sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}" \
@@ -221,7 +225,7 @@ main() {
 
     if [[ "$CONFIG_ONLY" == "0" ]]; then
         local go="y"
-        printf 'Install system packages (niri, portals, swayidle, notification daemon)? [Y/n] '
+        printf 'Install system packages (niri, portals, swayidle)? [Y/n] '
         if [[ "$ASSUME_YES" != "1" ]]; then
             read -r go || go=""
             go="${go:-y}"
