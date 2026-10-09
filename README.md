@@ -192,13 +192,15 @@ These are deliberate; see the comments in each module.
   use `wl-mirror` as a window if needed.
 - **No live effect preview.** `niri_effects.sh` writes and reloads; call it on
   slider release, not per frame.
-- **Recording uses the same recorder as Hyprland.** `gpu-screen-recorder` via
-  the shared `~/.config/hypr/scripts/screenshot.sh` (compositor agnostic:
-  `gpu-screen-recorder` + `grim` + `slurp` + `wl-clipboard`); that script does
-  not use `hyprctl`, so it runs unchanged on niri. `install.sh` adds
-  `gpu-screen-recorder` as an optional package (it may live in the AUR / a COPR),
-  and `niri_screenshot.sh --record` forwards to the shared script. OBS over the
-  screencast portal remains an alternative.
+- **Recording uses the same engine as Hyprland: `gpu-screen-recorder`.** It is
+  self-contained in `scripts/niri_record.sh` (no dependency on the Hyprland
+  repo): `Super+Alt+R` toggles a full-screen recording and `Super+Alt+Shift+R`
+  records a region picked with `slurp`. Recordings go to
+  `${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings`, and the pid cache
+  (`~/.cache/quickshell/recording/rec_pid`) drives the bar's recording
+  indicator, so the widget's stop button works too. `install.sh` adds
+  `gpu-screen-recorder` as an optional package (AUR / COPR on some distros).
+  OBS over the screencast portal remains an alternative.
 - **`GDK_BACKEND` is not set.** A global `wayland` value breaks the screencast
   portal; the KDL `environment {}` deliberately omits it.
 

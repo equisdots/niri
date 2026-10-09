@@ -77,6 +77,12 @@ binds {
     Super+Print      { screenshot-screen; }
     Super+Shift+Print { screenshot-window; }
 
+    // ---------------------------------------------------------- screen recording
+    // Same engine as Hyprland (gpu-screen-recorder), self-contained in
+    // scripts/niri_record.sh. The bar's recording indicator reads the pid cache.
+    Super+Alt+R       { spawn-sh "bash ~/.config/niri/scripts/niri_record.sh toggle"; }
+    Super+Alt+Shift+R { spawn-sh "bash ~/.config/niri/scripts/niri_record.sh region"; }
+
     // ------------------------------------------------------------------ pickers
     // Hyprland used hyprpicker -a. niri has a native color pick; the wrapper
     // converts the 0.0..1.0 float channels to hex and copies them.

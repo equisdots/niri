@@ -7,10 +7,9 @@
 # `screenshot-path`, with the built-in annotation UI). --edit uses grim+slurp
 # and hands the capture to satty for annotation.
 #
-# Screen recording uses the SAME recorder as Hyprland: the shared
-# ~/.config/hypr/scripts/screenshot.sh, which drives gpu-screen-recorder
-# (compositor agnostic: gpu-screen-recorder + grim + slurp + wl-clipboard).
-# Any --record invocation is forwarded to that shared script verbatim.
+# Screen recording uses the SAME engine as Hyprland, gpu-screen-recorder, via the
+# self-contained scripts/niri_record.sh (no dependency on the Hyprland repo).
+# Any --record invocation is forwarded to niri_record.sh, honouring --geometry.
 #
 # Usage:
 #   niri_screenshot.sh                 interactive region capture (native UI)
@@ -18,7 +17,7 @@
 #   niri_screenshot.sh --window        focused window (native action)
 #   niri_screenshot.sh --edit          region capture, open in satty
 #   niri_screenshot.sh --geometry G    grim with a slurp-style geometry
-#   niri_screenshot.sh --record ...    forwarded to the shared screenshot.sh
+#   niri_screenshot.sh --record ...    forwarded to niri_record.sh
 #   niri_screenshot.sh --help
 # ============================================================================
 
@@ -30,13 +29,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=caching.sh
 . "$SCRIPT_DIR/caching.sh"
 
-# Screen recording is the shared gpu-screen-recorder path (same as Hyprland);
-# forward --record (and its audio args) to the shared screenshot.sh verbatim.
+# Screen recording is handled by the self-contained niri_record.sh
+# (gpu-screen-recorder). Forward a --record invocation, honouring a --geometry
+# region when the caller passed one.
 for _a in "$@"; do
     if [[ "$_a" == "--record" ]]; then
-        SHARED="$HOME/.config/hypr/scripts/screenshot.sh"
-        [[ -f "$SHARED" ]] || die "screen recording needs the shared screenshot.sh (gpu-screen-recorder); install gpu-screen-recorder and run 'dotsniri install'"
-        exec bash "$SHARED" "$@"
+        _geom=""; _prev=""
+        for _b in "$@"; do
+            [[ "$_prev" == "--geometry" ]] && _geom="$_b"
+            _prev="$_b"
+        done
+        if [[ -n "$_geom" ]]; then
+            exec bash "$SCRIPT_DIR/niri_record.sh" region-geom "$_geom"
+        else
+            exec bash "$SCRIPT_DIR/niri_record.sh" toggle
+        fi
     fi
 done
 
