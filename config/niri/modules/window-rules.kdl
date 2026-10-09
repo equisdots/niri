@@ -1,0 +1,104 @@
+// ============================================================================
+// Window rules
+// ============================================================================
+// Translated from config/hypr/windowrules.lua.
+//
+// Rules are evaluated in order; a later matching rule overrides an earlier one
+// for scalar/color properties, so the catch-all appearance rules come first.
+// niri matches `app-id` (Hyprland `class`) and `title` as Rust regexes.
+// ============================================================================
+
+// ---------------------------------------------------------------- appearance
+// Hyprland: decoration.rounding = 20, active_opacity = 0.85,
+// inactive_opacity = 0.80, dim_inactive = true (approximated with opacity).
+window-rule {
+    geometry-corner-radius 20
+    clip-to-geometry true
+    opacity 0.85
+}
+
+// dim_inactive has no niri equivalent; the lower opacity approximates it.
+window-rule {
+    match is-active=false
+    opacity 0.80
+}
+
+// ------------------------------------------------------------ floating windows
+window-rule { match app-id="^(pavucontrol)$";         open-floating true }
+window-rule { match app-id="^(nm-connection-editor)$"; open-floating true }
+window-rule { match app-id="^(blueman-manager)$";     open-floating true }
+window-rule { match app-id="^(gnome-calculator)$";    open-floating true }
+window-rule { match app-id="^(org.gnome.Calculator)$"; open-floating true }
+window-rule { match app-id="^(file-roller)$";         open-floating true }
+window-rule { match app-id="^(nwg-look)$";            open-floating true }
+window-rule { match app-id="^(qt5ct)$";               open-floating true }
+window-rule { match app-id="^(qt6ct)$";               open-floating true }
+
+// File-manager dialogs.
+window-rule { match title="^(Open File)(.*)$";            open-floating true }
+window-rule { match title="^(Open Folder)(.*)$";          open-floating true }
+window-rule { match title="^(Save As)(.*)$";              open-floating true }
+window-rule { match title="^(Confirm to replace files)$"; open-floating true }
+window-rule { match title="^(File Operation Progress)$";  open-floating true }
+
+// Picture-in-Picture: floating, fixed 640x360, bottom-right. Hyprland moved it
+// to "100% - 660", "100% - 380" (20 px from the right and bottom edges).
+// niri's `center` rule has no equivalent, so the position is remembered.
+window-rule {
+    match title="^Picture-in-Picture$"
+    open-floating true
+    default-column-width { fixed 640; }
+    default-window-height { fixed 360; }
+    default-floating-position x=20 y=20 relative-to="bottom-right"
+}
+
+// -------------------------------------------------------------------- sizing
+// Hyprland: center = true (no niri equivalent) + size = 800x600.
+window-rule {
+    match app-id="^(pavucontrol)$"
+    default-column-width { fixed 800; }
+    default-window-height { fixed 600; }
+}
+window-rule {
+    match app-id="^(blueman-manager)$"
+    default-column-width { fixed 800; }
+    default-window-height { fixed 600; }
+}
+
+// ------------------------------------------------------------------- opacity
+window-rule { match app-id="^(kitty)$";         opacity 0.95 }
+window-rule { match app-id="^(Code)$";          opacity 0.95 }
+window-rule { match app-id="^(code-oss)$";      opacity 0.95 }
+window-rule { match app-id="^(firefox)$";       opacity 0.98 }
+window-rule { match app-id="^(chromium)$";      opacity 0.98 }
+window-rule { match app-id="^(google-chrome)$"; opacity 0.98 }
+
+// ------------------------------------------------------- workspace placement
+// Hyprland used numeric workspaces 2/3/4/5/6; the named workspaces from
+// modules/workspaces.kdl carry the same roles.
+window-rule { match app-id="^(firefox)$";       open-on-workspace "browser" }
+window-rule { match app-id="^(chromium)$";      open-on-workspace "browser" }
+window-rule { match app-id="^(google-chrome)$"; open-on-workspace "browser" }
+
+window-rule { match app-id="^(Code)$";          open-on-workspace "code" }
+window-rule { match app-id="^(code-oss)$";      open-on-workspace "code" }
+
+window-rule { match app-id="^(discord)$";         open-on-workspace "chat" }
+window-rule { match app-id="^(Slack)$";           open-on-workspace "chat" }
+window-rule { match app-id="^(telegram-desktop)$"; open-on-workspace "chat" }
+
+window-rule { match app-id="^(Spotify)$"; open-on-workspace "media" }
+window-rule { match app-id="^(spotify)$"; open-on-workspace "media" }
+
+window-rule { match app-id="^(steam)$";   open-on-workspace "games" }
+window-rule { match app-id="^(lutris)$";  open-on-workspace "games" }
+window-rule { match app-id="^(heroic)$";  open-on-workspace "games" }
+
+// --------------------------------------------------------------------- games
+// Hyprland set immediate = true (tearing), which niri cannot do. The valid
+// substitute is on-demand variable refresh rate: enable it on the gaming
+// output
+//   output "DP-1" { variable-refresh-rate on-demand=true }
+// and mark the games so VRR engages only while they are on screen.
+window-rule { match app-id="^(steam_app_.*)$"; open-fullscreen true; variable-refresh-rate true }
+window-rule { match app-id=r#"\.exe$"#; variable-refresh-rate true }

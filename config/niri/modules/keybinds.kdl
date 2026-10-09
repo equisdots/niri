@@ -1,0 +1,187 @@
+// ============================================================================
+// Key bindings
+// ============================================================================
+// Translated from config/hypr/keybinds.lua.
+//
+// niri treats a duplicate key in `binds {}` as a parse error, while Hyprland
+// silently allowed rebinding. The three conflicts found in the source config
+// were resolved as: keep focus for Super+H/J/L, move lock to Super+Alt+L (see
+// the README "known differences" section).
+//
+// Panel toggles call the existing qs_manager.sh and reload.sh under
+// ~/.config/hypr (strategy A). Workspace routing calls scripts/niri_ws.sh.
+// niri actions replace the Hyprland dispatchers.
+// ============================================================================
+
+binds {
+    // ------------------------------------------------------------- applications
+    Super+Return { spawn "kitty"; }
+    Super+T      { spawn "kitty"; }
+    Super+E      { spawn "nautilus"; }
+    Super+F      { spawn "firefox"; }
+    Super+period { spawn-sh "rofi -show emoji -theme ~/.config/rofi/launcher.rasi"; }
+
+    // ------------------------------------------------------------- Quickshell
+    Super+Q { close-window; }
+    Super+M { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle music"; }
+    Super+C { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle clipboard"; }
+    Super+D { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle applauncher"; }
+    Super+B { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle battery"; }
+    Super+W { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle wallpaper"; }
+    Super+S { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle calendar"; }
+    Super+N { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle network"; }
+    Super+V { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle volume"; }
+    Super+X { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor guide"; }
+    Super+Shift+S { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor"; }
+    Super+Shift+E { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor bar"; }
+    Super+Shift+T { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle focustime"; }
+    Super+U { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle updater"; }
+    Super+Y { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle quicknotes"; }
+    Super+I { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle system-monitor"; }
+    Super+O { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle rss-reader"; }
+    Super+apostrophe { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle file-search"; }
+    Super+Shift+B { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle window-controls"; }
+    Super+Shift+P { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle palette"; }
+    Super+Shift+D { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor"; }
+    Super+Shift+X { spawn "kitty" "xturing"; }
+    Super+Shift+W { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle widgets-redactor"; }
+    Super+R { spawn-sh "bash ~/.config/hypr/scripts/reload.sh"; }
+    Super+grave { toggle-overview; }
+
+    // --------------------------------------------------------- window management
+    Alt+F4 { close-window; }
+    Super+Space { toggle-window-floating; }
+    Super+G { center-column; }
+    // Hyprland Super+Shift+Space was window.pin, which niri does not have. It
+    // is repurposed to toggling the focused column's tabbed display.
+    Super+Shift+Space { toggle-column-tabbed-display; }
+
+    // ------------------------------------------------------ lock / logout / power
+    // Lock moved from Hyprland's Super+L (which niri needs for focus-right).
+    Super+Alt+L       { spawn-sh "bash ~/.config/hypr/scripts/lock.sh"; }
+    Super+Escape      { quit; }
+    Super+Ctrl+S      { spawn "systemctl" "suspend"; }
+    Super+Ctrl+Shift+L { spawn "systemctl" "poweroff"; }
+
+    // ------------------------------------------------------------- screenshots
+    // niri-native screenshot actions; scripts/niri_screenshot.sh maps the old
+    // grim/satty verbs on top of these.
+    Print            { screenshot; }
+    Shift+Print      { screenshot; }
+    Super+Print      { screenshot-screen; }
+    Super+Shift+Print { screenshot-window; }
+
+    // ------------------------------------------------------------------ pickers
+    // Hyprland used hyprpicker -a. niri has a native color pick; the wrapper
+    // converts the 0.0..1.0 float channels to hex and copies them.
+    Super+Shift+C { spawn-sh "bash ~/.config/niri/scripts/niri_pick_color.sh"; }
+
+    // --------------------------------------------------------------- multimedia
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "bash ~/.config/hypr/scripts/volume.sh up"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "bash ~/.config/hypr/scripts/volume.sh down"; }
+    XF86AudioMute        allow-when-locked=true { spawn-sh "bash ~/.config/hypr/scripts/volume.sh mute"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn-sh "pactl set-source-mute @DEFAULT_SOURCE@ toggle"; }
+
+    XF86MonBrightnessUp   allow-when-locked=true { spawn-sh "bash ~/.config/hypr/scripts/brightness.sh up"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn-sh "bash ~/.config/hypr/scripts/brightness.sh down"; }
+    Super+F3 { spawn-sh "bash ~/.config/hypr/scripts/brightness.sh up"; }
+    Super+F2 { spawn-sh "bash ~/.config/hypr/scripts/brightness.sh down"; }
+
+    XF86AudioPlay  allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioPause allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioNext  allow-when-locked=true { spawn "playerctl" "next"; }
+    XF86AudioPrev  allow-when-locked=true { spawn "playerctl" "previous"; }
+    XF86AudioStop  allow-when-locked=true { spawn "playerctl" "stop"; }
+
+    Super+equal     { spawn-sh "bash ~/.config/hypr/scripts/volume.sh up"; }
+    Super+minus     { spawn-sh "bash ~/.config/hypr/scripts/volume.sh down"; }
+    Super+BackSpace { spawn-sh "bash ~/.config/hypr/scripts/volume.sh mute"; }
+
+    // ------------------------------------------------------------------- focus
+    Super+Left  { focus-column-left; }
+    Super+Right { focus-column-right; }
+    Super+Up    { focus-window-up; }
+    Super+Down  { focus-window-down; }
+    Super+H     { focus-column-left; }
+    Super+L     { focus-column-right; }
+    Super+K     { focus-window-up; }
+    Super+J     { focus-window-down; }
+    Alt+Tab       { focus-window-previous; }
+    Alt+Shift+Tab { focus-window-previous; }
+
+    // ------------------------------------------------------------------ movement
+    Super+Shift+Left  { move-column-left; }
+    Super+Shift+Right { move-column-right; }
+    Super+Shift+Up    { move-window-up; }
+    Super+Shift+Down  { move-window-down; }
+    Super+Shift+H { move-column-left; }
+    Super+Shift+L { move-column-right; }
+    Super+Shift+K { move-window-up; }
+    Super+Shift+J { move-window-down; }
+
+    // -------------------------------------------------------------------- resize
+    Super+Ctrl+Left  { set-column-width "-5%"; }
+    Super+Ctrl+Right { set-column-width "+5%"; }
+    Super+Ctrl+Up    { set-window-height "-5%"; }
+    Super+Ctrl+Down  { set-window-height "+5%"; }
+    Super+Ctrl+H { set-column-width "-5%"; }
+    Super+Ctrl+L { set-column-width "+5%"; }
+    Super+Ctrl+K { set-window-height "-5%"; }
+    Super+Ctrl+J { set-window-height "+5%"; }
+
+    // ---------------------------------------------------------------- workspaces
+    Super+1 { focus-workspace 1; }
+    Super+2 { focus-workspace 2; }
+    Super+3 { focus-workspace 3; }
+    Super+4 { focus-workspace 4; }
+    Super+5 { focus-workspace 5; }
+    Super+6 { focus-workspace 6; }
+    Super+7 { focus-workspace 7; }
+    Super+8 { focus-workspace 8; }
+    Super+9 { focus-workspace 9; }
+    Super+0 { focus-workspace 10; }
+
+    Super+Shift+1 { move-window-to-workspace 1; }
+    Super+Shift+2 { move-window-to-workspace 2; }
+    Super+Shift+3 { move-window-to-workspace 3; }
+    Super+Shift+4 { move-window-to-workspace 4; }
+    Super+Shift+5 { move-window-to-workspace 5; }
+    Super+Shift+6 { move-window-to-workspace 6; }
+    Super+Shift+7 { move-window-to-workspace 7; }
+    Super+Shift+8 { move-window-to-workspace 8; }
+    Super+Shift+9 { move-window-to-workspace 9; }
+    Super+Shift+0 { move-window-to-workspace 10; }
+
+    Super+Page_Up   { focus-workspace-up; }
+    Super+Page_Down { focus-workspace-down; }
+    Super+Tab       { focus-workspace-previous; }
+
+    Super+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Super+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
+
+    // Scratchpad approximation (named workspace; no floating overlay).
+    Super+A       { focus-workspace "scratch"; }
+    Super+Shift+A { move-window-to-workspace "scratch"; }
+
+    // -------------------------------------------------------------- multi-monitor
+    Super+Alt+I { focus-monitor-right; }
+    Super+Alt+U { focus-monitor-left; }
+    Super+Alt+Shift+I { move-column-to-monitor-right; }
+    Super+Alt+Shift+U { move-column-to-monitor-left; }
+    Super+Alt+P { move-workspace-to-monitor-next; }
+    Super+Alt+M { spawn-sh "bash ~/.config/niri/scripts/niri_monitor_manager.sh"; }
+
+    // ------------------------------------------------------------ theme / scale
+    Super+Z       { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle scale"; }
+    Super+P       { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle idle"; }
+    Super+Shift+Z { spawn-sh "bash ~/.config/niri/scripts/niri_scale.sh up"; }
+    Super+Ctrl+Z  { spawn-sh "bash ~/.config/niri/scripts/niri_scale.sh down"; }
+
+    // GPU performance mode (NVIDIA; shared script).
+    Super+Alt+G       { spawn-sh "bash ~/.config/hypr/scripts/gpu-mode.sh cycle"; }
+    Super+Alt+Shift+G { spawn-sh "bash ~/.config/hypr/scripts/gpu-mode.sh menu"; }
+
+    // Force a niri config reload. Saving already live-reloads; the load-config
+    // action makes the reload explicit for the reload key.
+    Super+Shift+R { spawn-sh "niri msg action load-config-file --path $HOME/.config/niri/config.kdl"; }
+}

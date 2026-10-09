@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Niri
+Comment=Scrollable-tiling Wayland compositor (equisdots)
+Exec=niri-session
+TryExec=niri-session
+Type=Application
+DesktopNames=niri
+Keywords=niri;wayland;compositor;tiling;

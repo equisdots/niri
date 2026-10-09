@@ -1,0 +1,44 @@
+// ============================================================================
+// Input devices
+// ============================================================================
+// Translated from the `input` block of config/hypr/settings.lua.
+//
+// niri 26.04 does NOT support a per-device `device "name" {}` section: every
+// option applies to all devices of one type. Writing a `device` block fails
+// `niri validate`. Where Hyprland allowed per-device settings, the port takes
+// the shared per-type value.
+// ============================================================================
+
+input {
+    keyboard {
+        xkb {
+            // Hyprland: kb_layout = "es", kb_variant = "", kb_model = "",
+            // kb_rules = "".
+            layout "es"
+            // Hyprland: kb_options = "grp:alt_shift_toggle". niri keeps the
+            // same XKB option for the physical switch; the bar keyboard button
+            // uses `niri msg action switch-layout next` instead.
+            options "grp:alt_shift_toggle"
+        }
+        // Hyprland did not enable Num Lock; leave the flag commented out.
+        // numlock
+    }
+
+    touchpad {
+        tap              // Hyprland: tap_to_click = true
+        dwt              // Hyprland: disable_while_typing = true
+        natural-scroll   // Hyprland: natural_scroll = true
+        // Hyprland: drag_lock = false and scroll_factor = 1.0 are the niri
+        // defaults, so they are not written.
+    }
+
+    mouse {
+        // Hyprland: accel_profile = "flat", sensitivity = 0.
+        accel-profile "flat"
+        accel-speed 0.0
+    }
+
+    // Hyprland: follow_mouse = 1. Keep focus following the pointer, but only
+    // while it does not scroll the view (max-scroll-amount 0%).
+    focus-follows-mouse max-scroll-amount="0%"
+}

@@ -1,0 +1,76 @@
+// ============================================================================
+// Animations
+// ============================================================================
+// Translated from config/hypr/animations.lua.
+//
+// niri has a fixed set of animation targets, so the Hyprland leaves fadeIn,
+// fadeOut, fadeSwitch, fadeShadow, fadeDim, border, borderangle and
+// specialWorkspace have no equivalent and are dropped. Only the window/view
+// movement and the open/close transitions translate.
+//
+// Curve mapping from animations.lua:
+//   - "overshot" (bezier 0.13,0.99 0.29,1.15) -> cubic-bezier 0.13 0.99 0.29 1.15
+//   - "easeOutExpo" (bezier 0.16,1 0.3,1)     -> "ease-out-expo"
+//   - windowsMove / workspaces used "overshot": niri uses springs, so a
+//     critically-damped spring with matching feel is used instead.
+// ============================================================================
+
+animations {
+    // windowsIn (speed 6, overshot, popin).
+    window-open {
+        duration-ms 200
+        curve "cubic-bezier" 0.13 0.99 0.29 1.15
+    }
+
+    // windowsOut (speed 5, easeOutExpo).
+    window-close {
+        duration-ms 150
+        curve "ease-out-expo"
+    }
+
+    // windowsMove (overshot) -> spring.
+    window-movement {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    // Window resize (no direct Hyprland leaf) -> same spring as movement.
+    window-resize {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    // Horizontal camera movement -> spring.
+    horizontal-view-movement {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    // workspaces (overshot, slide) -> workspace-switch spring.
+    workspace-switch {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    // Overview (Since 25.05), enabled by the overview {} block in config.kdl.
+    overview-open-close {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    // Screenshot UI fade (native screenshot action).
+    screenshot-ui-open {
+        duration-ms 200
+        curve "ease-out-quad"
+    }
+
+    // Config-error / exit-confirmation notifications. Kept at niri defaults;
+    // listed so the full set is explicit.
+    config-notification-open-close {
+        spring damping-ratio=0.6 stiffness=1000 epsilon=0.001
+    }
+
+    exit-confirmation-open-close {
+        spring damping-ratio=0.6 stiffness=500 epsilon=0.01
+    }
+
+    // Recent-windows switcher (Since 25.11).
+    recent-windows-close {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.001
+    }
+}

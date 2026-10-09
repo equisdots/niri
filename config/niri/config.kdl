@@ -1,0 +1,90 @@
+// ============================================================================
+// equisdots niri - entry configuration
+// ============================================================================
+// This is the niri equivalent of config/hypr/hyprland.lua. It is the entry
+// point only: the actual settings live in modules/*.kdl, and machine-local,
+// runtime-generated values live in generated/*.kdl.
+//
+// Baseline: niri 26.04 (2026-04-25). Validate with:
+//     niri validate -c ~/.config/niri/config.kdl
+// A running niri live-reloads this file (and every included file) on save.
+//
+// Data root (strategy A): the shared equisdots data stays at ~/.config/hypr
+// (settings.json, palettes, wallpapers, the Quickshell shell and the shared
+// scripts). Only the compositor config moves here, to ~/.config/niri.
+// ============================================================================
+
+// --- Static modules, in override order --------------------------------------
+include "modules/environment.kdl"
+include "modules/input.kdl"
+include "modules/layout.kdl"
+include "modules/animations.kdl"
+include "modules/workspaces.kdl"
+include "modules/window-rules.kdl"
+include "modules/layer-rules.kdl"
+include "modules/autostart.kdl"
+include "modules/keybinds.kdl"
+
+// ============================================================================
+// Top-level options
+// ============================================================================
+
+// Ask clients to omit client-side decorations so niri draws the border and
+// shadow itself (the window-rule geometry-corner-radius + clip-to-geometry in
+// modules/window-rules.kdl restores the Hyprland rounding = 20 look). Note:
+// already-running windows need a restart to pick this up.
+prefer-no-csd
+
+// Screenshot destination for the native screenshot actions. niri formats this
+// with strftime(3) and creates the directory. Set to `null` to keep captures
+// clipboard-only.
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+// Cursor theme, exported as XCURSOR_THEME/XCURSOR_SIZE to spawned clients.
+// Matches the XCURSOR_* values in modules/environment.kdl.
+cursor {
+    xcursor-theme "Bibata-Modern-Classic"
+    xcursor-size 24
+}
+
+// Overview (Since 25.05). zoom 0.5 is the default; the backdrop matches the
+// Hyprland color0 background from config/hypr/colors.lua.
+overview {
+    zoom 0.5
+    backdrop-color "#363537"
+}
+
+// Do not show the "Important Hotkeys" overlay on every start.
+hotkey-overlay {
+    skip-at-startup
+}
+
+// Global background-blur tuning (Since 26.04). Blur is enabled per surface by
+// the window/layer rules; these are the shared parameters. Values mirror
+// decoration:blur in config/hypr/settings.lua (passes 3, noise 0.02).
+blur {
+    passes 3
+    offset 3
+    noise 0.02
+    saturation 1.1
+}
+
+// Xwayland integration (Since 25.08). With xwayland-satellite >= 0.7 on PATH,
+// niri creates the X11 socket, exports DISPLAY and spawns it on demand. Do NOT
+// add a manual xwayland-satellite spawn or DISPLAY to the config; the built-in
+// integration handles both.
+xwayland-satellite {
+    path "xwayland-satellite"
+}
+
+// --- Runtime-generated fragments (optional, last so they win) ---------------
+// `optional=true` (Since 26.04) means a missing file is only a warning, so the
+// config loads before the first writer runs, and still reloads when the file
+// appears. Includes are positional and later settings override earlier ones, so
+// these sit after the modules AND after the top-level options above: the
+// palette border colors, generated effects and saved outputs take precedence.
+include optional=true "generated/theme-colors.kdl"
+include optional=true "generated/theme-effects.kdl"
+include optional=true "generated/outputs.kdl"
+include optional=true "generated/user-binds.kdl"
+include optional=true "generated/user-startup.kdl"

@@ -1,0 +1,11 @@
+# Generated niri config fragments. The .kdl files are produced at runtime by
+# the scripts; keep the README and the placeholder.
+config/niri/generated/*.kdl
+!config/niri/generated/.gitkeep
+!config/niri/generated/README.md
+
+# Local state and editor droppings.
+*.bak
+*.tmp
+__pycache__/
+*.pyc

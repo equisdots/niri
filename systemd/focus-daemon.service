@@ -1,0 +1,15 @@
+[Unit]
+Description=Focus-time daemon for the Quickshell panel (equisdots niri)
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=simple
+# NOTE: modules/autostart.kdl already spawns this daemon; remove that line when
+# this unit is enabled.
+ExecStart=/usr/bin/env python3 %h/.config/hypr/scripts/quickshell/ui/panels/focustime/focus_daemon.py
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

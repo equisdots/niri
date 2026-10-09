@@ -1,0 +1,38 @@
+// ============================================================================
+// Workspaces
+// ============================================================================
+// Translated from config/hypr/workspaces.lua.
+//
+// Model shift: niri workspaces are dynamic (GNOME-like) and independent per
+// monitor; there is no static 1..N grid and no `special:` scratchpad overlay.
+// Named workspaces give the stable identity the Hyprland config used for app
+// placement and scratchpads. Numbered focus binds (Super+1..0) address dynamic
+// indices; app placement uses the names below.
+//
+// Hyprland pinned workspace 1..4 to four physical screens by EDID description.
+// niri matches an output by connector name or by "make model serial". Declare
+// one named workspace per screen and pin it with open-on-output, for example:
+//     workspace "one" { open-on-output "BOE NE160WUM-NXA" }
+// List your outputs with: niri msg outputs
+// ============================================================================
+
+// App-placement targets; window-rules.kdl sends apps here.
+workspace "browser"
+workspace "code"
+workspace "chat"
+workspace "media"
+workspace "games"
+
+// Scratchpad approximation. Hyprland used floating special workspaces
+// (special:terminal, special:files, special:music). niri has no floating
+// overlay toggle, so a plain named workspace is used: focus it with Super+A,
+// move windows to it with Super+Shift+A (see modules/keybinds.kdl).
+workspace "scratch"
+
+// Per-monitor boot defaults (Hyprland workspace_rule default=true). Uncomment
+// and replace the identities with your own screens.
+//
+// workspace "one"   { open-on-output "BOE NE160WUM-NXA" }
+// workspace "two"   { open-on-output "Xiaomi Corporation P27FBB-RGGL 5275600003084" }
+// workspace "three" { open-on-output "Xiaomi Corporation P27FBB-RGGL 5275600003570" }
+// workspace "four"  { open-on-output "Xiaomi Corporation P27FBB-RGGL 5275600072695" }

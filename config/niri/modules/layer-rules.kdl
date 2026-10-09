@@ -1,0 +1,29 @@
+// ============================================================================
+// Layer rules
+// ============================================================================
+// Translated from config/hypr/layers.lua: backdrop blur for the Quickshell
+// layer surfaces (the "glass" effect).
+//
+// Hyprland used a namespace-scoped layer blur with ignore_alpha = 0.15. niri
+// uses a per-surface background-effect (Since 26.04); the global strength and
+// noise come from the `blur {}` block in config.kdl. The shell controls visible
+// transparency through settings.json "glass" (background alpha), so the blur
+// stays xray and saturation is only a slight boost.
+//
+// Multiple `match namespace` directives inside one rule are OR-ed, so this one
+// rule covers every Quickshell namespace.
+// ============================================================================
+
+layer-rule {
+    match namespace="^qs-master$"           // popups, menus, bar editor (ui/Main.qml)
+    match namespace="^quickshell$"          // the bar (PanelWindow default namespace)
+    match namespace="^qs-floating-overlay$" // floating sidebar
+    match namespace="^qs-popups$"           // notifications
+    match namespace="^qs-widget-"           // desktop widgets
+
+    background-effect {
+        blur true
+        xray true
+        saturation 1.1
+    }
+}

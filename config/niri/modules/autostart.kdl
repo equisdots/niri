@@ -1,0 +1,62 @@
+// ============================================================================
+// Autostart
+// ============================================================================
+// Translated from config/hypr/autostart.lua (the hl.on("hyprland.start") hooks).
+//
+// spawn-sh-at-startup (Since 25.08) runs a shell command once at session start.
+// For daemons that benefit from ordering/restart, a systemd user unit wired
+// with `systemctl --user add-wants niri.service <unit>` is preferable; the
+// units shipped by this repo live in systemd/ (see systemd/README.md).
+//
+// NOTE: idle/lock is NOT started here. Hyprland's autostart launched hypridle;
+// under niri that is replaced by swayidle (using
+// `niri msg action power-off-monitors` and the shared lock script), driven by
+// systemd/swayidle.service or by scripts/niri_idle_mode.sh. See the README.
+// ============================================================================
+
+// Secret service and authentication agent (GNOME keyring + polkit).
+spawn-sh-at-startup "gnome-keyring-daemon --start --components=secrets,pkcs11"
+spawn-sh-at-startup "/usr/lib/polkit-kde-authentication-agent-1 || /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 || /usr/libexec/polkit-kde-authentication-agent-1"
+
+// Portal environment: publish the niri Wayland display to the systemd user
+// manager so portals and systemd-launched apps inherit it.
+spawn-sh-at-startup "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+spawn-sh-at-startup "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+
+// Kill leftover shells from a previous session.
+spawn-sh-at-startup "pkill -f 'quickshell.*Shell.qml' 2>/dev/null || true"
+
+// Wallpaper daemon (xwww; the shared davincix/xwww kernel under ~/.config/hypr).
+spawn-sh-at-startup "xwww-daemon"
+
+// Quickshell: single entry point (Shell.qml loads Main + TopBar + Floating).
+// The binary is `quickshell`, falling back to `qs`.
+spawn-sh-at-startup "BIN=; if command -v quickshell >/dev/null 2>&1; then BIN=quickshell; elif command -v qs >/dev/null 2>&1; then BIN=qs; fi; [ -n \"$BIN\" ] && exec $BIN -p ~/.config/hypr/scripts/quickshell/Shell.qml || true"
+
+// Focus-time daemon for the shell panel.
+spawn-sh-at-startup "python3 ~/.config/hypr/scripts/quickshell/ui/panels/focustime/focus_daemon.py &"
+
+// First-boot wallpaper choice (shared script).
+spawn-sh-at-startup "~/.config/hypr/scripts/init.sh"
+
+// MPRIS player control.
+spawn-sh-at-startup "playerctld"
+
+// Clipboard history.
+spawn-sh-at-startup "wl-paste --type text --watch cliphist store"
+spawn-sh-at-startup "wl-paste --type image --watch cliphist store"
+
+// System tray applets.
+spawn-sh-at-startup "nm-applet --indicator"
+spawn-sh-at-startup "blueman-applet"
+
+// Volume and update listeners (shared scripts).
+spawn-sh-at-startup "~/.config/hypr/scripts/volume_listener.sh"
+spawn-sh-at-startup "~/.config/hypr/scripts/update_notifier.sh"
+
+// GTK / cursor theme (kept in sync with the cursor {} block in config.kdl).
+spawn-sh-at-startup "gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Classic'"
+spawn-sh-at-startup "gsettings set org.gnome.desktop.interface cursor-size 24"
+spawn-sh-at-startup "gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'"
+spawn-sh-at-startup "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
+spawn-sh-at-startup "gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'"

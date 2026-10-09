@@ -1,0 +1,16 @@
+[Unit]
+Description=Idle management for niri (swayidle, equisdots)
+Documentation=file:%h/.config/niri/scripts/niri_idle_mode.sh
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=simple
+# Lock first (or at the same instant as DPMS off), then power off monitors,
+# then suspend. niri wakes monitors automatically on input.
+ExecStart=/usr/bin/env swayidle -w timeout 600 'bash %h/.config/hypr/scripts/lock.sh' timeout 601 'niri msg action power-off-monitors' timeout 1200 'systemctl suspend' before-sleep 'bash %h/.config/hypr/scripts/lock.sh'
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

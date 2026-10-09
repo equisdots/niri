@@ -1,0 +1,16 @@
+[Unit]
+Description=xwww wallpaper daemon for niri (equisdots)
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=simple
+# xwww-daemon is installed in /usr/local/bin by the hyprland installer; the
+# systemd user session PATH includes it. NOTE: modules/autostart.kdl already
+# spawns it; remove that line when this unit is enabled.
+ExecStart=/usr/bin/env xwww-daemon
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

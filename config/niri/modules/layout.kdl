@@ -1,0 +1,80 @@
+// ============================================================================
+// Layout and window decoration
+// ============================================================================
+// Translated from the `general` and `decoration` blocks of
+// config/hypr/settings.lua and the dwindle/master blocks (dropped: niri is
+// scrollable-tiling, there is no dwindle/master layout).
+//
+// Model shift: Hyprland separates gaps_in (16) from gaps_out (25). niri has a
+// single `gaps` (inner + outer) plus `struts` that add an outer gap on top of
+// `gaps`. Setting gaps 16 and struts 9 gives an effective outer gap of 25 and
+// an inner gap of 16, matching the Hyprland look.
+// ============================================================================
+
+layout {
+    gaps 16
+
+    struts {
+        left 9
+        right 9
+        top 9
+        bottom 9
+    }
+
+    // Hyprland used the dwindle layout; niri never resizes existing columns on
+    // open, so the closest neutral behavior is not to center on focus.
+    center-focused-column "never"
+
+    default-column-width { proportion 0.5; }
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    // Hyprland: border_size = 2 with active/inactive borders drawn around every
+    // window. niri's `border` (all windows, takes space) is the direct match;
+    // the focus-ring (active window only) is disabled so no double ring shows.
+    // The colors here are the static fallback; generated/theme-colors.kdl
+    // overrides them from the active palette.
+    border {
+        on
+        width 2
+        active-color "#fc618dee"
+        inactive-color "#69676caa"
+    }
+
+    focus-ring {
+        off
+    }
+
+    // Hyprland: shadow { range = 35, render_power = 5, offset = {0,10},
+    // color = rgba(000000CC), color_inactive = rgba(00000088) }. niri has no
+    // render_power; softness is the closest control.
+    shadow {
+        on
+        softness 35
+        spread 5
+        offset x=0 y=10
+        draw-behind-window true
+        color "#000000cc"
+        inactive-color "#00000088"
+    }
+
+    // Tabbed columns are niri's alternative to stacking windows in a column.
+    tab-indicator {
+        hide-when-single-tab
+        place-within-column
+        gap 5
+        width 4
+        length total-proportion=1.0
+        position "right"
+        gaps-between-tabs 2
+        corner-radius 8
+    }
+
+    // Backdrop drawn where no window or wallpaper layer is present. Matches
+    // the Hyprland color0 background from config/hypr/colors.lua.
+    background-color "#363537"
+}

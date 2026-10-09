@@ -1,0 +1,16 @@
+[Unit]
+Description=Quickshell shell for niri (equisdots)
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=simple
+# Prefer `quickshell`, fall back to `qs`. NOTE: modules/autostart.kdl already
+# spawns the shell with spawn-sh-at-startup; when this unit is enabled, remove
+# that line so only one instance runs.
+ExecStart=/usr/bin/env bash -c 'BIN=quickshell; command -v quickshell >/dev/null 2>&1 || BIN=qs; exec "$BIN" -p "$HOME/.config/hypr/scripts/quickshell/Shell.qml"'
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target
