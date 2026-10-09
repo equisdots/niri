@@ -110,7 +110,8 @@ install_packages() {
     info "installing packages with $PKG (niri, portals, swayidle, notification daemon, capture tools)"
     case "$PKG" in
         pacman)
-            sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}"
+            sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}" \
+                || warn "core packages failed; install niri manually: sudo pacman -S niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk"
             sudo_cmd pacman -S --needed --noconfirm "${OPT_ARCH[@]}" 2>/dev/null \
                 || warn "optional packages skipped: ${OPT_ARCH[*]}"
             ;;
@@ -192,9 +193,9 @@ maybe_call_meta() {
     local meta="${NIRI_META_INSTALLER:-}"
     if [[ -z "$meta" ]]; then
         local candidates=(
-            "$SCRIPT_DIR/../niri-meta/install.sh"
-            "$SCRIPT_DIR/../equisdots-niri/niri-meta/install.sh"
-            "$HOME/.local/share/equisdots/niri-meta/install.sh"
+            "$SCRIPT_DIR/../niri-meta/bin/dotsniri"
+            "$SCRIPT_DIR/../equisdots-niri/niri-meta/bin/dotsniri"
+            "$HOME/.local/share/equisdots-niri/niri-meta/bin/dotsniri"
         )
         local c
         for c in "${candidates[@]}"; do
@@ -204,7 +205,7 @@ maybe_call_meta() {
 
     if [[ -n "$meta" && -f "$meta" ]]; then
         info "meta installer found: $meta (delegating)"
-        local args=()
+        local args=(install)
         [[ "$ASSUME_YES" == "1" ]] && args+=("-y")
         EQUISDOTS_NIRI_INSTALL_DONE=1 bash "$meta" "${args[@]}" \
             || warn "meta installer reported an error; continue with the niri install"
