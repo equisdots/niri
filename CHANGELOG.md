@@ -16,6 +16,10 @@ layer blur and the package/notification-daemon install path.
 - `config.kdl`: `include optional=true "generated/borders.kdl"` after
   `generated/theme-colors.kdl`, so the border colours written by the shell
   backend actually reach the running config.
+- `install.sh`: `gpu-screen-recorder` as an optional package, so niri uses the
+  SAME screen recorder as Hyprland through the shared, compositor-agnostic
+  `~/.config/hypr/scripts/screenshot.sh` (`gpu-screen-recorder` + `grim` +
+  `slurp` + `wl-clipboard`). `niri_screenshot.sh --record` forwards to it.
 
 ### Changed
 

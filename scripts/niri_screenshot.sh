@@ -7,16 +7,19 @@
 # `screenshot-path`, with the built-in annotation UI). --edit uses grim+slurp
 # and hands the capture to satty for annotation.
 #
+# Screen recording uses the SAME recorder as Hyprland: the shared
+# ~/.config/hypr/scripts/screenshot.sh, which drives gpu-screen-recorder
+# (compositor agnostic: gpu-screen-recorder + grim + slurp + wl-clipboard).
+# Any --record invocation is forwarded to that shared script verbatim.
+#
 # Usage:
 #   niri_screenshot.sh                 interactive region capture (native UI)
 #   niri_screenshot.sh --full          focused output (native action)
 #   niri_screenshot.sh --window        focused window (native action)
 #   niri_screenshot.sh --edit          region capture, open in satty
 #   niri_screenshot.sh --geometry G    grim with a slurp-style geometry
+#   niri_screenshot.sh --record ...    forwarded to the shared screenshot.sh
 #   niri_screenshot.sh --help
-#
-# Recording is intentionally not handled here under niri; use OBS (screencast
-# portal) or wf-recorder directly. See the README.
 # ============================================================================
 
 set -euo pipefail
@@ -26,6 +29,16 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/lib/common.sh"
 # shellcheck source=caching.sh
 . "$SCRIPT_DIR/caching.sh"
+
+# Screen recording is the shared gpu-screen-recorder path (same as Hyprland);
+# forward --record (and its audio args) to the shared screenshot.sh verbatim.
+for _a in "$@"; do
+    if [[ "$_a" == "--record" ]]; then
+        SHARED="$HOME/.config/hypr/scripts/screenshot.sh"
+        [[ -f "$SHARED" ]] || die "screen recording needs the shared screenshot.sh (gpu-screen-recorder); install gpu-screen-recorder and run 'dotsniri install'"
+        exec bash "$SHARED" "$@"
+    fi
+done
 
 EDIT=0
 FULL=0

@@ -84,19 +84,21 @@ detect_distro() {
 # --- Package installation ---------------------------------------------------
 CORE_ARCH=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
-OPT_ARCH=(satty)
+OPT_ARCH=(satty gpu-screen-recorder)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
-OPT_FEDORA=(satty)
+OPT_FEDORA=(satty gpu-screen-recorder)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
-OPT_DEBIAN=(satty)
-# NOTE: no separate notification daemon (mako/dunst) is installed on purpose.
-# The Quickshell shell registers org.freedesktop.Notifications itself; a second
-# daemon would win the D-Bus name and serve notifications with its own colours
-# instead of the active palette.
+OPT_DEBIAN=(satty gpu-screen-recorder)
+# NOTE: `gpu-screen-recorder` is the SAME screen recorder Hyprland uses (driven
+# by the shared ~/.config/hypr/scripts/screenshot.sh, which is compositor
+# agnostic: gpu-screen-recorder + grim + slurp + wl-clipboard). It may live in
+# the AUR / a COPR on some distros, so it is optional (a missing package only
+# warns). No separate notification daemon (mako/dunst) is installed on purpose:
+# the Quickshell shell registers org.freedesktop.Notifications itself.
 
 sudo_cmd() {
     if [[ "$(id -u)" == "0" ]]; then
