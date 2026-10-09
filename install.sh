@@ -221,9 +221,12 @@ main() {
 
     if [[ "$CONFIG_ONLY" == "0" ]]; then
         local go="y"
-        printf 'Install system packages (niri, portals, swayidle, notification daemon)? [y/N] '
-        read_answer go y
-        if [[ "$go" =~ ^[Yy]$ ]]; then
+        printf 'Install system packages (niri, portals, swayidle, notification daemon)? [Y/n] '
+        if [[ "$ASSUME_YES" != "1" ]]; then
+            read -r go || go=""
+            go="${go:-y}"
+        fi
+        if [[ ! "$go" =~ ^[Nn]$ ]]; then
             install_packages
         else
             info "skipping package installation"
