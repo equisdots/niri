@@ -68,6 +68,40 @@ Portals (screencasting, file choosers) require a real session (`niri-session`
 or a display manager); a bare `niri` on a TTY does not provide the
 graphical-session plumbing.
 
+## Configuration authoring (KDL strictness)
+
+niri's KDL parser is strict. A block whose **last node is not terminated** by
+`;` or a newline before `}` fails to parse:
+
+```kdl
+// INVALID: the last node (open-floating) is not terminated before }
+window-rule { match app-id="^(kitty)$"; open-floating true }
+
+// VALID: multi-line block
+window-rule {
+    match app-id="^(kitty)$"
+    open-floating true
+}
+
+// VALID: one-line block with a trailing ;
+focus-ring { off; }
+```
+
+An invalid config makes niri **silently fall back to its default config**: a
+grey screen with the "Important Hotkeys" overlay, no error on screen. This is
+why every rule in `modules/window-rules.kdl` and every generated fragment uses
+multi-line blocks (see `docs/kdl-gotchas.md`).
+
+Always validate before trusting a running session:
+
+```sh
+niri validate -c ~/.config/niri/config.kdl
+```
+
+Saving a watched file live-reloads it, but a bad fragment can still be loaded
+if it is written between validations; the generators run `niri validate` before
+forcing a reload, so a broken runtime fragment is not applied.
+
 ## File map
 
 ```
@@ -80,12 +114,13 @@ config/niri/
     animations.kdl           animations.lua -> animations {}
     workspaces.kdl           workspaces.lua -> named workspaces
     window-rules.kdl         windowrules.lua -> window-rule {}
-    layer-rules.kdl          layers.lua -> layer-rule {} (Quickshell blur)
+    layer-rules.kdl          layers.lua -> layer-rule {} (forced blur removed)
     autostart.kdl            autostart.lua -> spawn-sh-at-startup
     keybinds.kdl             keybinds.lua -> binds {}
   generated/
     README.md                generated fragments and their writers
     theme-colors.kdl*        border colors (niri_write_borders.sh)
+    borders.kdl*             live border colors (shell backend, Compositor.setWindowBorders)
     theme-effects.kdl*       gaps/border/blur/shadow (niri_effects.sh)
     outputs.kdl*             saved monitor layout (niri_monitor_apply.sh)
     user-binds.kdl*          shell-generated binds (Config.qml, pending port)
@@ -139,7 +174,18 @@ These are deliberate; see the comments in each module.
   and reload; this is why the border/effects writers exist.
 - **Border, not focus-ring.** Hyprland drew a border around every window;
   niri's `focus-ring` (active window) is disabled and `border` (all windows) is
-  enabled with width 2.
+  enabled with width 2. The default border is a neutral grey; the shell refines
+  it from the palette's muted colour (`color8`), not the loud accent, through
+  `generated/borders.kdl`.
+- **No forced layer blur.** Hyprland's namespace blur used `ignore_alpha`, which
+  niri 26.04 does not have. Forcing blur on the large, mostly transparent
+  Quickshell panels painted a full-screen blur sheet, so the layer rules no
+  longer force it. Surfaces that request blur via `ext-background-effect` are
+  still blurred with the global `blur {}` settings.
+- **No separate notification daemon.** The Quickshell shell registers
+  `org.freedesktop.Notifications` itself and renders palette-aware
+  notifications; no `mako`/`dunst` is installed (a rival daemon would win the
+  D-Bus name and use its own colours).
 - **Key conflicts resolved.** Hyprland rebound keys; niri rejects duplicates.
   Focus wins for `Super+H/J/L`, and lock moved to `Super+Alt+L`.
 - **No output mirroring.** Hardware mirroring does not exist in niri 26.04;
@@ -159,7 +205,9 @@ valid alternative rather than dropped silently.
 | Hyprland feature | niri substitute |
 | --- | --- |
 | Per-window `immediate` (tearing) | `variable-refresh-rate on-demand=true` on the output + `variable-refresh-rate true` on game windows |
-| Layer blur per namespace (`ignore_alpha`) | `layer-rule { background-effect { blur true; xray true } }` + global `blur {}` |
+| Layer blur per namespace (`ignore_alpha`) | No forced layer blur (niri has no `ignore_alpha`); surfaces that request `ext-background-effect` are blurred with the global `blur {}` tuning |
+| Accent-coloured active border | Neutral grey default; shell refines it from the palette muted colour (`color8`) via `generated/borders.kdl` |
+| `mako` / `dunst` notification daemon | The Quickshell shell registers `org.freedesktop.Notifications` itself (palette-aware) |
 | `dim_inactive` / `dim_strength` | `window-rule { match is-active=false; opacity 0.80 }` |
 | `borderangle` / `fade*` animation leaves | springs (`window-movement`, `workspace-switch`, `horizontal-view-movement`) |
 | Special workspace (scratchpad overlay) | named workspace `scratch` focused with `Super+A` |

@@ -6,6 +6,55 @@ repository, independent of the niri release it targets.
 
 ## [Unreleased]
 
+Bring-up fixes for the niri 26.04 session: KDL strictness, border rendering,
+layer blur and the package/notification-daemon install path.
+
+### Added
+
+- `keybinds.kdl`: `Super+Shift+F` (`fullscreen-window`), `Super+Shift+M`
+  (`maximize-column`) and `Super+Slash` (`show-hotkey-overlay`).
+- `config.kdl`: `include optional=true "generated/borders.kdl"` after
+  `generated/theme-colors.kdl`, so the border colours written by the shell
+  backend actually reach the running config.
+
+### Changed
+
+- `layout.kdl`: the default border colours are a neutral grey instead of the
+  loud palette accent; the shell refines them at runtime from the palette's
+  muted colour (`color8`) through `generated/borders.kdl`.
+- `layer-rules.kdl`: the forced `background-effect { blur }` on the Quickshell
+  layer surfaces was removed. niri has no `ignore_alpha`, so forcing blur on the
+  large, mostly transparent popup surfaces painted a full-screen blur sheet.
+  niri still blurs any surface that asks for it through `ext-background-effect`.
+- `install.sh`: the package prompt now defaults to yes, the meta hook delegates
+  to `niri-meta/bin/dotsniri install`, and a failed package step no longer
+  aborts the install (config and session files are still deployed).
+
+### Fixed
+
+- KDL strictness: niri's parser rejects a block whose last node is not
+  terminated by `;` or a newline before `}` (for example
+  `window-rule { match app-id="x"; open-floating true }` or `focus-ring { off }`).
+  An invalid config makes niri silently fall back to its default config (grey
+  screen plus the "Important Hotkeys" overlay). The one-line rules in
+  `modules/window-rules.kdl` and the shell-generated border fragment are now
+  emitted as multi-line blocks.
+- `window-rules.kdl`: `draw-border-with-background false`, so niri no longer
+  paints a solid border-coloured rectangle behind windows (which tinted
+  translucent windows with the border colour).
+- `install.sh`: the meta installer hook calls
+  `niri-meta/bin/dotsniri install` correctly (previously it looked for the wrong
+  path and passed no subcommand).
+
+### Removed
+
+- The forced layer blur in `layer-rules.kdl` (see Changed).
+- The separate notification daemon (`mako`/`dunst`) from the package lists. The
+  Quickshell shell owns `org.freedesktop.Notifications`; a rival daemon would
+  win the D-Bus name and serve notifications with its own colours.
+- The GitHub Actions validation workflow. It was added to guard KDL syntax
+  regressions and then removed because CI was not authorized.
+
 ## [0.1.0]
 
 First release: the niri compositor layer for the equisdots desktop, targeting
