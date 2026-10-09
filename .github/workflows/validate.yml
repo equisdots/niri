@@ -1,0 +1,44 @@
+name: validate-config
+
+# Guards against KDL syntax regressions. niri's parser is strict (for example,
+# a one-line block like `window-rule { match ...; float true }` fails because
+# the last child is not terminated before `}`), and an invalid config makes
+# niri silently fall back to its default config.
+on:
+  push:
+    paths:
+      - 'config/**'
+      - 'scripts/**'
+      - '.github/workflows/validate.yml'
+  pull_request:
+    paths:
+      - 'config/**'
+      - 'scripts/**'
+      - '.github/workflows/validate.yml'
+  workflow_dispatch:
+
+jobs:
+  niri-validate:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - name: Install git
+        run: pacman -Sy --noconfirm --needed git
+      - uses: actions/checkout@v4
+
+      - name: Install niri
+        run: pacman -S --noconfirm --needed niri
+
+      - name: Validate the static config tree
+        run: niri validate -c config/niri/config.kdl
+
+      - name: Validate with generated fragments
+        env:
+          NIRI_NO_RELOAD: '1'
+        run: |
+          export HOME="$(mktemp -d)"
+          mkdir -p "$HOME/.config/niri"
+          cp -r config/niri/. "$HOME/.config/niri/"
+          bash scripts/niri_write_borders.sh
+          bash scripts/niri_effects.sh persist
+          niri validate -c "$HOME/.config/niri/config.kdl"
