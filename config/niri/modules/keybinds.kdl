@@ -70,12 +70,13 @@ binds {
     Super+Ctrl+Shift+L { spawn "systemctl" "poweroff"; }
 
     // ------------------------------------------------------------- screenshots
-    // niri-native screenshot actions; scripts/niri_screenshot.sh maps the old
-    // grim/satty verbs on top of these.
-    Print            { screenshot; }
-    Shift+Print      { screenshot; }
-    Super+Print      { screenshot-screen; }
-    Super+Shift+Print { screenshot-window; }
+    // Open the equisdots Quickshell overlay (region + still/video + mic
+    // selection), same UX as Hyprland. scripts/niri_screenshot.sh handles both
+    // the overlay and the direct capture/record paths.
+    Print            { spawn-sh "bash ~/.config/niri/scripts/niri_screenshot.sh"; }
+    Shift+Print      { spawn-sh "bash ~/.config/niri/scripts/niri_screenshot.sh --edit"; }
+    Super+Print      { spawn-sh "bash ~/.config/niri/scripts/niri_screenshot.sh --full"; }
+    Super+Shift+Print { spawn-sh "bash ~/.config/niri/scripts/niri_screenshot.sh --full --edit"; }
 
     // ---------------------------------------------------------- screen recording
     // Same engine as Hyprland (gpu-screen-recorder), self-contained in

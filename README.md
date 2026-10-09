@@ -138,7 +138,8 @@ scripts/
   niri_monitor_manager.sh    list/apply outputs, position presets, save
   niri_scale.sh              scale the focused output up/down/auto
   niri_idle_mode.sh          swayidle awake/normal/boot/status
-  niri_screenshot.sh         native region/full/window + grim+satty --edit
+  niri_screenshot.sh         equisdots overlay (region + still/video + mic)
+  niri_record.sh             gpu-screen-recorder start/stop, region via slurp
   niri_pick_color.sh         native pick-color -> hex on the clipboard
 
 systemd/                     optional user units + README
@@ -158,7 +159,8 @@ install.sh / uninstall.sh    idempotent, distro-agnostic
 | `niri_monitor_manager.sh` | `list`, `apply NAME key=val`, `layout PRESET`, `save` |
 | `niri_scale.sh` | `up`, `down`, `auto`, `<scale> [output]` |
 | `niri_idle_mode.sh` | `awake`, `normal`, `boot`, `status` |
-| `niri_screenshot.sh` | (default), `--full`, `--window`, `--edit`, `--geometry G` |
+| `niri_screenshot.sh` | (default overlay), `--full`, `--window`, `--edit`, `--geometry G`, `--record`, `--scan-qr` |
+| `niri_record.sh` | `toggle`, `start [screen]`, `region`, `region-geom G`, `stop`, `status` |
 | `niri_workspaces.sh` | (daemon), `--once` |
 
 Run any script with `--help` for details.
@@ -192,6 +194,11 @@ These are deliberate; see the comments in each module.
   use `wl-mirror` as a window if needed.
 - **No live effect preview.** `niri_effects.sh` writes and reloads; call it on
   slider release, not per frame.
+- **Screenshots open the equisdots overlay** (`Print`), the same UI as Hyprland:
+  pick a region and choose screenshot vs. video and microphone on/off.
+  `scripts/niri_screenshot.sh` launches the shared Quickshell
+  `ScreenshotOverlay.qml` and handles the capture; the overlay calls back into
+  the niri script through `EQUISDOTS_SCREENSHOT_SCRIPT` (shipped by `niri-shell`).
 - **Recording uses the same engine as Hyprland: `gpu-screen-recorder`.** It is
   self-contained in `scripts/niri_record.sh` (no dependency on the Hyprland
   repo): `Super+Alt+R` toggles a full-screen recording and `Super+Alt+Shift+R`

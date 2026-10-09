@@ -23,6 +23,11 @@ layer blur and the package/notification-daemon install path.
   toggle, region capture via `slurp`, and the same pid cache the bar reads.
   `niri_screenshot.sh --record` forwards to it. New binds: `Super+Alt+R`
   (toggle) and `Super+Alt+Shift+R` (region).
+- `scripts/niri_screenshot.sh` now opens the shared equisdots screenshot
+  overlay (region + still/video + microphone selection), matching Hyprland, and
+  the `Print` binds point at it. `install.sh` adds `quickshell`/`zbar` and keeps
+  `grim`/`slurp`/`wl-clipboard`/`satty`/`gpu-screen-recorder` so the overlay has
+  everything it needs.
 
 ### Changed
 

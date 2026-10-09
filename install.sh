@@ -82,23 +82,25 @@ detect_distro() {
 }
 
 # --- Package installation ---------------------------------------------------
-CORE_ARCH=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
+CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
-OPT_ARCH=(satty gpu-screen-recorder)
+OPT_ARCH=(satty gpu-screen-recorder zbar)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
-OPT_FEDORA=(satty gpu-screen-recorder)
+OPT_FEDORA=(satty gpu-screen-recorder zbar)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
-OPT_DEBIAN=(satty gpu-screen-recorder)
-# NOTE: `gpu-screen-recorder` is the SAME screen recorder Hyprland uses (driven
-# by the shared ~/.config/hypr/scripts/screenshot.sh, which is compositor
-# agnostic: gpu-screen-recorder + grim + slurp + wl-clipboard). It may live in
-# the AUR / a COPR on some distros, so it is optional (a missing package only
-# warns). No separate notification daemon (mako/dunst) is installed on purpose:
-# the Quickshell shell registers org.freedesktop.Notifications itself.
+OPT_DEBIAN=(satty gpu-screen-recorder zbar-tools)
+# NOTE: `quickshell` (the equisdots shell/overlay), `grim`, `slurp` and
+# `wl-clipboard` provide the screenshot overlay and direct capture; `satty`
+# annotates, `zbar` (zbarimg) scans QR codes, and `gpu-screen-recorder` is the
+# SAME screen recorder Hyprland uses (driven by niri/scripts/niri_record.sh;
+# compositor agnostic, wlr-screencopy). gpu-screen-recorder/satty/zbar may live
+# in the AUR / a COPR / an extra repo, so they are optional (a missing package
+# only warns). No separate notification daemon (mako/dunst) is installed on
+# purpose: the Quickshell shell registers org.freedesktop.Notifications itself.
 
 sudo_cmd() {
     if [[ "$(id -u)" == "0" ]]; then
