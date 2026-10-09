@@ -16,9 +16,17 @@
 // ---------------------------------------------------------------- appearance
 // Hyprland: decoration.rounding = 20, active_opacity = 0.85,
 // inactive_opacity = 0.80, dim_inactive = true (approximated with opacity).
+//
+// draw-border-with-background=false is important: with it enabled (niri's
+// default) niri paints a SOLID rectangle in the border colour behind every
+// window. Combined with the global opacity below, that solid colour (the
+// palette accent, often red) shows through the window as a coloured tint --
+// the terminal looked red with red borders. Drawing the border as a ring
+// instead removes that fill.
 window-rule {
     geometry-corner-radius 20
     clip-to-geometry true
+    draw-border-with-background false
     opacity 0.85
 }
 
