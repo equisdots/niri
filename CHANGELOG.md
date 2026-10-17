@@ -11,8 +11,10 @@ layer blur and the package/notification-daemon install path.
 
 ### Added
 
-- `keybinds.kdl`: `Super+Shift+F` (`fullscreen-window`), `Super+Shift+M`
-  (`maximize-column`) and `Super+Slash` (`show-hotkey-overlay`).
+- `keybinds.kdl`: `Super+Shift+M` opens the Plugins panel (same chord as
+  Hyprland); `maximize-column` moved to `Super+Ctrl+M` to free it.
+- `keybinds.kdl`: `Super+Shift+F` (`fullscreen-window`) and `Super+Slash`
+  (`show-hotkey-overlay`).
 - `config.kdl`: `include optional=true "generated/borders.kdl"` after
   `generated/theme-colors.kdl`, so the border colours written by the shell
   backend actually reach the running config.
@@ -25,9 +27,18 @@ layer blur and the package/notification-daemon install path.
   (toggle) and `Super+Alt+Shift+R` (region).
 - `scripts/niri_screenshot.sh` now opens the shared equisdots screenshot
   overlay (region + still/video + microphone selection), matching Hyprland, and
-  the `Print` binds point at it. `install.sh` adds `quickshell`/`zbar` and keeps
+  the `Print` binds point at it. It resolves the screenshots plugin's overlay
+  first (`plugin-screenshots-ScreenshotOverlay.qml` /
+  `ui/plugins/screenshots/ui/ScreenshotOverlay.qml`) and keeps the legacy root
+  path as a fallback. `install.sh` adds `quickshell`/`zbar` and keeps
   `grim`/`slurp`/`wl-clipboard`/`satty`/`gpu-screen-recorder` so the overlay has
   everything it needs.
+- Plugin-standard parity with the merged Hyprland stack: the same shell plugin
+  catalog, MD3 tokens, plugin popups and bar modules; `niri-meta` deploys
+  `plugin-api`, `plugin-sdk`, the plugin hub, the default plugins and their
+  registry. Plugin actions are reached through the static compositor binds
+  (clipboard, quicknotes, RSS, file search, screenshots, timex) because niri
+  loads KDL and does not evaluate plugin `hypr.lua` fragments.
 
 ### Changed
 
@@ -44,6 +55,15 @@ layer blur and the package/notification-daemon install path.
 
 ### Fixed
 
+- Single-occurrence sections: `input`, `animations` and `blur` are now owned by
+  one generated fragment each (`generated/user-input.kdl`,
+  `generated/user-animations.kdl`, `generated/blur.kdl`) seeded from
+  `config/niri/defaults/`. Previously the static modules plus the generated
+  fragments defined the same sections, which is a `niri validate` error once
+  the settings panel wrote `user-input.kdl`/`user-animations.kdl`, and `blur`
+  appeared both in `config.kdl` and `theme-effects.kdl`. The input writer now
+  also emits the keyboard layout/options and `focus-follows-mouse`, so making
+  the generated file the sole owner does not lose the translated defaults.
 - KDL strictness: niri's parser rejects a block whose last node is not
   terminated by `;` or a newline before `}` (for example
   `window-rule { match app-id="x"; open-floating true }` or `focus-ring { off }`).

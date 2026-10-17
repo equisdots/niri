@@ -49,9 +49,11 @@ to a live session.
 Everything under `generated/` is produced by a writer (a script or the shell
 backend) and must be **valid multi-line KDL**:
 
+- `user-input.kdl`, `user-animations.kdl`, `blur.kdl` — single-occurrence
+  sections owned by the settings/effects writers (seeded once from `defaults/`)
 - `borders.kdl` — shell backend (`Compositor.setWindowBorders`)
 - `theme-colors.kdl` — `scripts/niri_write_borders.sh`
-- `theme-effects.kdl` — `scripts/niri_effects.sh`
+- `theme-effects.kdl` — `scripts/niri_effects.sh` (`layout` knobs only)
 - `outputs.kdl` — `scripts/niri_monitor_apply.sh` / `niri_monitor_manager.sh save`
 - `user-binds.kdl`, `user-startup.kdl` — the shell
 
@@ -68,9 +70,17 @@ definitions deep-merge over earlier ones for the same section/property.
 ```kdl
 include "modules/layout.kdl"
 
+// Single-occurrence sections: exactly one owner each.
+include optional=true "generated/user-input.kdl"
+include optional=true "generated/user-animations.kdl"
+include optional=true "generated/blur.kdl"
+
 include optional=true "generated/theme-colors.kdl"
 include optional=true "generated/borders.kdl"   // after theme-colors, so it wins
 include optional=true "generated/theme-effects.kdl"
+include optional=true "generated/outputs.kdl"
+include optional=true "generated/user-binds.kdl"
+include optional=true "generated/user-startup.kdl"
 ```
 
 `optional=true` (niri 26.04) downgrades a missing file to a warning, so the

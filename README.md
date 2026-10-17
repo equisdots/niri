@@ -109,22 +109,27 @@ config/niri/
   config.kdl                 entry: includes modules, top-level options, generated
   modules/
     environment.kdl          env.lua -> environment {} (see caveats in-file)
-    input.kdl                settings.lua input -> input {}
     layout.kdl               general/decoration -> layout {}
-    animations.kdl           animations.lua -> animations {}
     workspaces.kdl           workspaces.lua -> named workspaces
     window-rules.kdl         windowrules.lua -> window-rule {}
     layer-rules.kdl          layers.lua -> layer-rule {} (forced blur removed)
     autostart.kdl            autostart.lua -> spawn-sh-at-startup
     keybinds.kdl             keybinds.lua -> binds {}
+  defaults/
+    input.kdl                seed for generated/user-input.kdl
+    animations.kdl           seed for generated/user-animations.kdl
+    blur.kdl                 seed for generated/blur.kdl
   generated/
     README.md                generated fragments and their writers
+    user-input.kdl*          input {} owner (seeded, then Settings panel)
+    user-animations.kdl*     animations {} owner (seeded, then Settings panel)
+    blur.kdl*                blur {} owner (seeded, then effects writer)
     theme-colors.kdl*        border colors (niri_write_borders.sh)
     borders.kdl*             live border colors (shell backend, Compositor.setWindowBorders)
-    theme-effects.kdl*       gaps/border/blur/shadow (niri_effects.sh)
+    theme-effects.kdl*       gaps/border/shadow (niri_effects.sh)
     outputs.kdl*             saved monitor layout (niri_monitor_apply.sh)
-    user-binds.kdl*          shell-generated binds (Config.qml, pending port)
-    user-startup.kdl*        shell-generated startup (Config.qml, pending port)
+    user-binds.kdl*          shell-generated binds (Config.qml -> Niri backend)
+    user-startup.kdl*        shell-generated startup (Config.qml -> Niri backend)
 
 scripts/
   lib/common.sh              shared paths/logging (EQUISDOTS_CONFIG_DIR, ...)
@@ -189,16 +194,27 @@ These are deliberate; see the comments in each module.
   notifications; no `mako`/`dunst` is installed (a rival daemon would win the
   D-Bus name and use its own colours).
 - **Key conflicts resolved.** Hyprland rebound keys; niri rejects duplicates.
-  Focus wins for `Super+H/J/L`, and lock moved to `Super+Alt+L`.
+  Focus wins for `Super+H/J/L`, lock moved to `Super+Alt+L`, and
+  `maximize-column` moved to `Super+Ctrl+M` so `Super+Shift+M` can open the
+  Plugins panel (the same chord as Hyprland).
 - **No output mirroring.** Hardware mirroring does not exist in niri 26.04;
   use `wl-mirror` as a window if needed.
 - **No live effect preview.** `niri_effects.sh` writes and reloads; call it on
   slider release, not per frame.
 - **Screenshots open the equisdots overlay** (`Print`), the same UI as Hyprland:
   pick a region and choose screenshot vs. video and microphone on/off.
-  `scripts/niri_screenshot.sh` launches the shared Quickshell
-  `ScreenshotOverlay.qml` and handles the capture; the overlay calls back into
-  the niri script through `EQUISDOTS_SCREENSHOT_SCRIPT` (shipped by `niri-shell`).
+  `scripts/niri_screenshot.sh` launches the screenshots plugin's Quickshell
+  overlay (with the legacy root path as a fallback) and handles the capture;
+  the overlay calls back into the niri script through
+  `EQUISDOTS_SCREENSHOT_SCRIPT` (shipped by `niri-shell`).
+- **Plugins are Quickshell-side and compositor-neutral.** `niri-meta` deploys
+  the plugin standard (`plugin-api`, `plugin-sdk`, the `plugins` hub, the
+  default plugins and their registry), so the same 63 plugins, MD3 theme
+  tokens, plugin popups/positions and bar modules run on niri. `Super+Shift+M`
+  opens the Plugins panel. Plugin-provided keybind actions are covered by the
+  static binds below (clipboard, quicknotes, RSS, file search, screenshots,
+  timex), because niri reads KDL rather than evaluating plugin `hypr.lua`
+  fragments at runtime.
 - **Recording uses the same engine as Hyprland: `gpu-screen-recorder`.** It is
   self-contained in `scripts/niri_record.sh` (no dependency on the Hyprland
   repo): `Super+Alt+R` toggles a full-screen recording and `Super+Alt+Shift+R`
@@ -236,7 +252,9 @@ valid alternative rather than dropped silently.
 
 - niri 26.04+ with `xwayland-satellite >= 0.7`.
 - `jq` and `python3` for the scripts.
-- For capture/annotation: `grim`, `slurp`, `satty`, `wl-clipboard`.
+- For capture/annotation: `grim`, `slurp`, `satty`, `wl-clipboard`, `zbar`.
+- For the plugin set: `cliphist` (clipboard), `fd` (file search) and `jq`
+  (scan/registry) in addition to the shell's own dependencies.
 - The shared equisdots payload (Quickshell shell, settings.json, palettes) from
   the other repositories; `install.sh` calls a meta installer when present.
 

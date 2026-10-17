@@ -165,8 +165,17 @@ fi
 # ---------------------------------------------------------
 # Phase 2: open the equisdots overlay (region + still/video + mic)
 # ---------------------------------------------------------
-QML="$HOME/.config/hypr/scripts/quickshell/ScreenshotOverlay.qml"
-[[ -f "$QML" ]] || die "ScreenshotOverlay.qml not found; run 'dotsniri install' first"
+# Resolve the overlay across deploy layouts. The screenshots plugin owns the
+# overlay since the plugin-standard cutover; the legacy root path is kept for
+# older deployments.
+QS_ROOT="$HOME/.config/hypr/scripts/quickshell"
+QML=""
+for c in "$QS_ROOT/plugin-screenshots-ScreenshotOverlay.qml" \
+         "$QS_ROOT/ui/plugins/screenshots/ui/ScreenshotOverlay.qml" \
+         "$QS_ROOT/ScreenshotOverlay.qml"; do
+    [[ -f "$c" ]] && { QML="$c"; break; }
+done
+[[ -n "$QML" ]] || die "ScreenshotOverlay.qml not found; run 'dotsniri install' first"
 
 # Toggle: a second press closes a running overlay.
 if pgrep -f "quickshell -p $QML" >/dev/null 2>&1; then
