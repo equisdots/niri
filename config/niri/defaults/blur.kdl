@@ -1,0 +1,18 @@
+// ============================================================================
+// Blur defaults (seed for generated/blur.kdl)
+// ============================================================================
+// `blur {}` is a single-occurrence section, so it lives in exactly one file:
+// the runtime-generated generated/blur.kdl. Installers copy this template there
+// only when the generated file does not exist yet; niri_effects.sh and the
+// shell's effects kernel then own it.
+//
+// Values mirror decoration:blur in config/hypr/settings.lua
+// (passes 3, noise 0.02, saturation ~1.1).
+// ============================================================================
+
+blur {
+    passes 3
+    offset 3
+    noise 0.02
+    saturation 1.1
+}

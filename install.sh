@@ -83,15 +83,18 @@ detect_distro() {
 
 # --- Package installation ---------------------------------------------------
 CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
+    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify
+    pipewire wireplumber)
 OPT_ARCH=(satty gpu-screen-recorder zbar)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
+    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify
+    pipewire wireplumber)
 OPT_FEDORA=(satty gpu-screen-recorder zbar)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard pipewire wireplumber)
+    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify-bin
+    pipewire wireplumber)
 OPT_DEBIAN=(satty gpu-screen-recorder zbar-tools)
 # NOTE: `quickshell` (the equisdots shell/overlay), `grim`, `slurp` and
 # `wl-clipboard` provide the screenshot overlay and direct capture; `satty`
@@ -152,6 +155,19 @@ deploy_config() {
 
     # Copy the tracked tree (modules/generated/session docs) in place.
     cp -R "$SCRIPT_DIR/config/niri/." "$dest/"
+
+    # Seed the single-occurrence generated sections (input/animations/blur) so
+    # the session starts with the translated defaults. The writers own them
+    # from then on; existing user files are never overwritten.
+    mkdir -p "$dest/generated"
+    local f
+    for f in input:user-input animations:user-animations blur:blur; do
+        src="${f%%:*}"; dst="${f##*:}"
+        if [[ ! -f "$dest/generated/$dst.kdl" && -f "$SCRIPT_DIR/config/niri/defaults/$src.kdl" ]]; then
+            cp "$SCRIPT_DIR/config/niri/defaults/$src.kdl" "$dest/generated/$dst.kdl"
+        fi
+    done
+
     mkdir -p "$dest/scripts"
     cp -R "$SCRIPT_DIR/scripts/." "$dest/scripts/"
     chmod +x "$dest/scripts/"*.sh 2>/dev/null || true

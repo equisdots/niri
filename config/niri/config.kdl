@@ -16,9 +16,11 @@
 
 // --- Static modules, in override order --------------------------------------
 include "modules/environment.kdl"
-include "modules/input.kdl"
+// input {} and animations {} are single-occurrence sections: they live in
+// generated/user-input.kdl and generated/user-animations.kdl (seeded from defaults/
+// at install time, then owned by the settings writer), so they are not
+// included from modules/ here.
 include "modules/layout.kdl"
-include "modules/animations.kdl"
 include "modules/workspaces.kdl"
 include "modules/window-rules.kdl"
 include "modules/layer-rules.kdl"
@@ -59,15 +61,9 @@ hotkey-overlay {
     skip-at-startup
 }
 
-// Global background-blur tuning (Since 26.04). Blur is enabled per surface by
-// the window/layer rules; these are the shared parameters. Values mirror
-// decoration:blur in config/hypr/settings.lua (passes 3, noise 0.02).
-blur {
-    passes 3
-    offset 3
-    noise 0.02
-    saturation 1.1
-}
+// Global background-blur tuning (Since 26.04) is a single-occurrence section:
+// it lives in generated/blur.kdl (seeded from defaults/blur.kdl at install
+// time, then owned by the effects writer). Do not define it here.
 
 // Xwayland integration (Since 25.08). With xwayland-satellite >= 0.7 on PATH,
 // niri creates the X11 socket, exports DISPLAY and spawns it on demand. Do NOT
@@ -83,6 +79,9 @@ xwayland-satellite {
 // appears. Includes are positional and later settings override earlier ones, so
 // these sit after the modules AND after the top-level options above: the
 // palette border colors, generated effects and saved outputs take precedence.
+include optional=true "generated/user-input.kdl"
+include optional=true "generated/user-animations.kdl"
+include optional=true "generated/blur.kdl"
 include optional=true "generated/theme-colors.kdl"
 // The shell backend writes the border colours here (Compositor.setWindowBorders);
 // included AFTER theme-colors so it wins if both files exist.

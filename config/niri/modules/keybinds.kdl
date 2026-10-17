@@ -33,6 +33,8 @@ binds {
     Super+V { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle volume"; }
     Super+X { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor guide"; }
     Super+Shift+S { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor"; }
+    // Plugins panel (manager + per-plugin settings pages), same as Hyprland.
+    Super+Shift+M { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle plugins"; }
     Super+Shift+E { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor bar"; }
     Super+Shift+T { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle focustime"; }
     Super+U { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle updater"; }
@@ -56,9 +58,10 @@ binds {
     // is repurposed to toggling the focused column's tabbed display.
     Super+Shift+Space { toggle-column-tabbed-display; }
     // Fullscreen / maximize. The niri defaults (Mod+F / Mod+Shift+F) collide
-    // with the app binds above, so they live on Super+Shift+F / Super+Shift+M.
+    // with the app binds above, so they live on Super+Shift+F / Super+Ctrl+M.
+    // Super+Shift+M is the Plugins panel (same chord as Hyprland).
     Super+Shift+F { fullscreen-window; }
-    Super+Shift+M { maximize-column; }
+    Super+Ctrl+M  { maximize-column; }
     // niri's built-in hotkey help overlay.
     Super+Slash   { show-hotkey-overlay; }
 
