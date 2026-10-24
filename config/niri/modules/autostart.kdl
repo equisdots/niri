@@ -66,7 +66,7 @@ spawn-sh-at-startup "~/.config/niri/scripts/niri_idle_mode.sh boot"
 
 // Volume and update listeners (shared scripts).
 spawn-sh-at-startup "~/.config/hypr/scripts/volume_listener.sh"
-spawn-sh-at-startup "~/.config/hypr/scripts/update_notifier.sh"
+spawn-sh-at-startup "~/.config/niri/scripts/niri_update_notifier.sh"
 
 // GTK / cursor theme (kept in sync with the cursor {} block in config.kdl).
 spawn-sh-at-startup "gsettings set org.gnome.desktop.interface cursor-theme 'Bibata-Modern-Classic'"

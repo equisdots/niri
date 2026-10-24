@@ -40,6 +40,11 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
   `ELECTRON_FORCE_DEVICE_SCALE_FACTOR` and `XCURSOR_SIZE` when
   `settings.json` has `appScale != 1.0`. `config.kdl` includes
   `optional=true "generated/env.kdl"`.
+- `scripts/niri_update_notifier.sh` + autostart: the update indicator now
+  compares `~/.local/state/equisdots-niri-version` with
+  `niri-meta/updates.json` and writes the same Quickshell cache files the bar
+  reads, instead of running the shared Hyprland notifier (which advertised
+  Hyprland updates on a niri-only machine). `--once` is available for tests.
 - `modules/autostart.kdl`: idle/lock now starts at session boot through
   `niri_idle_mode.sh boot` (Hyprland `idle-mode.sh boot` parity); the
   Quickshell launch sets
