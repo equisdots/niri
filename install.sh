@@ -7,6 +7,7 @@
 #   ./install.sh                 full install (packages + config + session files)
 #   ./install.sh --config-only   deploy ~/.config/niri and the user units only
 #   ./install.sh -y              assume "yes" for prompts
+#   ./install.sh --no-apps       skip kitty/starship/nvim/font app configs
 #   ./install.sh --help
 #
 # It is safe and idempotent: existing config is backed up once, files are
@@ -20,16 +21,19 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+USER_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 
 CONFIG_ONLY=0
 ASSUME_YES=0
 WITH_META=1
+APPS=1
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --config-only) CONFIG_ONLY=1 ;;
         -y|--yes)      ASSUME_YES=1 ;;
         --no-meta)     WITH_META=0 ;;
+        --no-apps)     APPS=0 ;;
         -h|--help)
             sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
             exit 0
@@ -274,7 +278,48 @@ deploy_config() {
     cp -R "$SCRIPT_DIR/scripts/." "$dest/scripts/"
     chmod +x "$dest/scripts/"*.sh 2>/dev/null || true
     chmod +x "$dest/scripts/lib/common.sh" 2>/dev/null || true
+    deploy_app_configs
     log "deployed niri config to $dest"
+}
+
+# Rofi/cava configs shipped by this repo, so a standalone niri install does not
+# depend on the equisdots/hyprland repo. Existing user configs are backed up.
+backup_user_config() {
+    local dest="$1"
+    [[ -d "$dest" ]] || return 0
+    local bak="$dest.bak.$(date +%Y%m%d_%H%M%S)"
+    cp -a "$dest" "$bak"
+    info "backed up $dest -> $bak"
+}
+
+deploy_app_configs() {
+    local apps="$SCRIPT_DIR/config/apps"
+    deploy_one_app_config "$apps/rofi" "$USER_CONFIG_DIR/rofi"
+    deploy_one_app_config "$apps/cava" "$USER_CONFIG_DIR/cava"
+}
+
+deploy_one_app_config() {
+    local src="$1" dest="$2"
+    [[ -d "$src" ]] || return 0
+    if [[ -d "$dest" ]] && diff -qr "$src" "$dest" >/dev/null 2>&1; then
+        return 0
+    fi
+    backup_user_config "$dest"
+    mkdir -p "$dest"
+    cp -R "$src/." "$dest/"
+}
+
+install_app_configs() {
+    [[ "$APPS" == "1" ]] || { info "skipping app configs (--no-apps)"; return 0; }
+    local script="$SCRIPT_DIR/scripts/install-app-configs.sh"
+    if [[ ! -f "$script" ]]; then
+        warn "scripts/install-app-configs.sh not found; skipping kitty/starship/nvim/font"
+        return 0
+    fi
+    local args=()
+    [[ "$ASSUME_YES" == "1" ]] && args+=("-y")
+    info "installing user app configs (kitty, starship, nvim, Hack Nerd Font)"
+    bash "$script" "${args[@]}" || warn "app config installer finished with warnings"
 }
 
 install_units() {
@@ -288,6 +333,25 @@ install_units() {
 }
 
 # --- Session and portal files ----------------------------------------------
+# The Quickshell lock screen authenticates through the "quickshell" PAM service.
+# Without it PAM falls back to pam_deny and no password is accepted.
+install_pam_lock() {
+    local src="$SCRIPT_DIR/config/pam.d/quickshell"
+    [[ -f "$src" ]] || return 0
+    if [[ -f /etc/pam.d/quickshell ]] && grep -q 'system-auth' /etc/pam.d/quickshell 2>/dev/null; then
+        info "PAM service 'quickshell' already configured"
+        return 0
+    fi
+    if [[ -f /etc/pam.d/quickshell ]]; then
+        sudo_cmd cp -f /etc/pam.d/quickshell /etc/pam.d/quickshell.backup || true
+    fi
+    if sudo_cmd install -Dm644 "$src" /etc/pam.d/quickshell; then
+        log "installed PAM service 'quickshell'"
+    else
+        warn "could not install /etc/pam.d/quickshell"
+    fi
+}
+
 install_session_files() {
     if [[ "$CONFIG_ONLY" == "1" ]]; then
         info "config-only: skipping system session/portal files"
@@ -303,6 +367,7 @@ install_session_files() {
         else
             warn "could not install session/portal files (sudo failed)"
         fi
+        install_pam_lock
     else
         warn "no root/sudo: skipping system session/portal files"
         warn "copy manually: session/niri.desktop -> /usr/share/wayland-sessions/"
@@ -327,6 +392,15 @@ maybe_call_meta() {
         for c in "${candidates[@]}"; do
             [[ -x "$c" || -f "$c" ]] && { meta="$c"; break; }
         done
+    fi
+
+    if [[ -z "$meta" ]] && have git; then
+        local meta_dir="$HOME/.local/share/equisdots-niri/niri-meta"
+        info "meta installer not found; cloning equisdots/niri-meta for the full niri stack..."
+        mkdir -p "$(dirname "$meta_dir")"
+        if git clone --depth 1 https://github.com/equisdots/niri-meta "$meta_dir" --quiet 2>/dev/null; then
+            meta="$meta_dir/bin/dotsniri"
+        fi
     fi
 
     if [[ -n "$meta" && -f "$meta" ]]; then
@@ -390,6 +464,9 @@ main() {
     install_units
     install_session_files
     maybe_call_meta
+    if [[ "$CONFIG_ONLY" == "0" ]]; then
+        install_app_configs
+    fi
     check_shared_payload
 
     echo

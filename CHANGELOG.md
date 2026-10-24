@@ -13,6 +13,18 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
 
 ### Added
 
+- Standalone app config installer (`scripts/install-app-configs.sh`): kitty
+  themes/shaders/aliases from `xscriptor-colors/terminal`, starship, neovim,
+  Hack Nerd Font, and the palette sync. `install.sh` runs it on a full install
+  (`--no-apps` skips it) and `niri-meta` calls it on `install`.
+- `config/apps/rofi/` and `config/apps/cava/`: the rofi/cava configs now live
+  in the niri repo and are deployed by `install.sh` and `dotsniri deploy`, so a
+  fresh niri install no longer depends on the `hyprland` repo for them.
+- `config/pam.d/quickshell` + `install.sh`: install the Quickshell lock-screen
+  PAM service on a full direct install (backup of an existing service).
+- `install.sh`: when no meta installer is present and `git` is available, it
+  clones `equisdots/niri-meta` and delegates, so a standalone niri checkout
+  still gets the full shell/plugin/config payload.
 - `keybinds.kdl`: `Super+Shift+M` opens the Plugins panel (same chord as
   Hyprland); `maximize-column` moved to `Super+Ctrl+M` to free it.
 - `keybinds.kdl`: `Super+Shift+F` (`fullscreen-window`) and `Super+Slash`
