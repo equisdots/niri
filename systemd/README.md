@@ -2,8 +2,9 @@
 
 Optional user units for the equisdots niri session. They are **not** required:
 `modules/autostart.kdl` already starts the shell, the wallpaper daemon, the
-focus daemon and the shared scripts through `spawn-sh-at-startup`. The units
-exist so a daemon can be monitored, restarted and ordered individually.
+focus daemon, idle/lock (through `niri_idle_mode.sh boot`) and the shared
+scripts through `spawn-sh-at-startup`. The units exist so a daemon can be
+monitored, restarted and ordered individually.
 
 Every unit uses the same session dependency block:
 
@@ -19,7 +20,7 @@ the target, and `Requisite=` ensures it only starts when the target is active.
 
 | Unit | Purpose |
 | --- | --- |
-| `swayidle.service` | Idle: lock, `niri msg action power-off-monitors`, suspend. |
+| `swayidle.service` | Idle: lock, `niri msg action power-off-monitors`, suspend. Optional: `modules/autostart.kdl` already starts idle through `niri_idle_mode.sh boot`, which uses this unit when installed. |
 | `quickshell.service` | The Quickshell bar/shell. |
 | `xwww.service` | The xwww wallpaper daemon. |
 | `focus-daemon.service` | The focus-time tracker for the shell panel. |
@@ -34,7 +35,8 @@ mkdir -p ~/.config/systemd/user
 cp systemd/*.service ~/.config/systemd/user/
 systemctl --user daemon-reload
 
-systemctl --user add-wants niri.service swayidle.service
+# swayidle is started by modules/autostart.kdl (niri_idle_mode.sh boot); do not
+# attach it here as well, or two idle managers can race the timers.
 systemctl --user add-wants niri.service quickshell.service
 systemctl --user add-wants niri.service xwww.service
 systemctl --user add-wants niri.service focus-daemon.service
@@ -61,3 +63,6 @@ journalctl --user-unit=niri -b --no-pager
 
 `niri_idle_mode.sh` uses `swayidle.service` automatically when it is installed;
 otherwise it starts a detached `swayidle` process (the old hypridle behavior).
+Autostart is the owner of idle/lock: `modules/autostart.kdl` calls
+`niri_idle_mode.sh boot` exactly once at session start. Remove that line first
+if you prefer to drive `swayidle.service` from `niri.service.wants/` instead.

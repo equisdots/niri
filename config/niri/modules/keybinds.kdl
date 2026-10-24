@@ -8,8 +8,16 @@
 // were resolved as: keep focus for Super+H/J/L, move lock to Super+Alt+L (see
 // the README "known differences" section).
 //
+// Floating terminal/editor: Super+Shift+K and Super+Shift+D mirror Hyprland and
+// call scripts/niri_floating_app.sh (spawn -> find via the niri event stream ->
+// float -> set size -> center). The bar editor stays on Super+Shift+S.
+//
 // Panel toggles call the existing qs_manager.sh and reload.sh under
-// ~/.config/hypr (strategy A). Workspace routing calls scripts/niri_ws.sh.
+// ~/.config/hypr (strategy A). Numbered/page workspace routing calls
+// scripts/niri_ws.sh so Quickshell popups close first. Wheel and
+// focus-workspace-previous stay direct actions: niri_ws.sh has no interface
+// for them, and spawning a process on every wheel tick would be worse than the
+// direct action (the bind's cooldown-ms already debounces it).
 // niri actions replace the Hyprland dispatchers.
 // ============================================================================
 
@@ -17,6 +25,8 @@ binds {
     // ------------------------------------------------------------- applications
     Super+Return { spawn "kitty"; }
     Super+T      { spawn "kitty"; }
+    Super+Shift+K { spawn-sh "bash ~/.config/niri/scripts/niri_floating_app.sh kitty 900 560 -- kitty"; }
+    Super+Shift+D { spawn-sh "bash ~/.config/niri/scripts/niri_floating_app.sh code-insiders 1200 800 -- code-insiders -n"; }
     Super+E      { spawn "nautilus"; }
     Super+F      { spawn "firefox"; }
     Super+period { spawn-sh "rofi -show emoji -theme ~/.config/rofi/launcher.rasi"; }
@@ -44,7 +54,6 @@ binds {
     Super+apostrophe { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle file-search"; }
     Super+Shift+B { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle window-controls"; }
     Super+Shift+P { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle palette"; }
-    Super+Shift+D { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle bar-editor"; }
     Super+Shift+X { spawn "kitty" "xturing"; }
     Super+Shift+W { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle widgets-redactor"; }
     Super+R { spawn-sh "bash ~/.config/hypr/scripts/reload.sh"; }
@@ -53,7 +62,7 @@ binds {
     // --------------------------------------------------------- window management
     Alt+F4 { close-window; }
     Super+Space { toggle-window-floating; }
-    Super+G { center-column; }
+    Super+G { center-window; }
     // Hyprland Super+Shift+Space was window.pin, which niri does not have. It
     // is repurposed to toggling the focused column's tabbed display.
     Super+Shift+Space { toggle-column-tabbed-display; }
@@ -68,7 +77,10 @@ binds {
     // ------------------------------------------------------ lock / logout / power
     // Lock moved from Hyprland's Super+L (which niri needs for focus-right).
     Super+Alt+L       { spawn-sh "bash ~/.config/hypr/scripts/lock.sh"; }
-    Super+Escape      { quit; }
+    // Hyprland's SUPER+SHIFT+Q exit; Super+Escape additionally skips the
+    // confirmation so both leave the session immediately.
+    Super+Shift+Q     { quit skip-confirmation=true; }
+    Super+Escape      { quit skip-confirmation=true; }
     Super+Ctrl+S      { spawn "systemctl" "suspend"; }
     Super+Ctrl+Shift+L { spawn "systemctl" "poweroff"; }
 
@@ -132,7 +144,6 @@ binds {
     Super+Shift+Down  { move-window-down; }
     Super+Shift+H { move-column-left; }
     Super+Shift+L { move-column-right; }
-    Super+Shift+K { move-window-up; }
     Super+Shift+J { move-window-down; }
 
     // -------------------------------------------------------------------- resize
@@ -146,46 +157,55 @@ binds {
     Super+Ctrl+J { set-window-height "+5%"; }
 
     // ---------------------------------------------------------------- workspaces
-    Super+1 { focus-workspace 1; }
-    Super+2 { focus-workspace 2; }
-    Super+3 { focus-workspace 3; }
-    Super+4 { focus-workspace 4; }
-    Super+5 { focus-workspace 5; }
-    Super+6 { focus-workspace 6; }
-    Super+7 { focus-workspace 7; }
-    Super+8 { focus-workspace 8; }
-    Super+9 { focus-workspace 9; }
-    Super+0 { focus-workspace 10; }
+    // Numbered focus/move goes through niri_ws.sh: it closes open Quickshell
+    // popups first and keeps the shared Hyprland/niri routing behavior.
+    Super+1 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 1"; }
+    Super+2 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 2"; }
+    Super+3 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 3"; }
+    Super+4 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 4"; }
+    Super+5 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 5"; }
+    Super+6 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 6"; }
+    Super+7 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 7"; }
+    Super+8 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 8"; }
+    Super+9 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 9"; }
+    Super+0 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 10"; }
 
-    Super+Shift+1 { move-window-to-workspace 1; }
-    Super+Shift+2 { move-window-to-workspace 2; }
-    Super+Shift+3 { move-window-to-workspace 3; }
-    Super+Shift+4 { move-window-to-workspace 4; }
-    Super+Shift+5 { move-window-to-workspace 5; }
-    Super+Shift+6 { move-window-to-workspace 6; }
-    Super+Shift+7 { move-window-to-workspace 7; }
-    Super+Shift+8 { move-window-to-workspace 8; }
-    Super+Shift+9 { move-window-to-workspace 9; }
-    Super+Shift+0 { move-window-to-workspace 10; }
+    Super+Shift+1 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 1 move"; }
+    Super+Shift+2 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 2 move"; }
+    Super+Shift+3 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 3 move"; }
+    Super+Shift+4 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 4 move"; }
+    Super+Shift+5 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 5 move"; }
+    Super+Shift+6 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 6 move"; }
+    Super+Shift+7 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 7 move"; }
+    Super+Shift+8 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 8 move"; }
+    Super+Shift+9 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 9 move"; }
+    Super+Shift+0 { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh 10 move"; }
 
-    Super+Page_Up   { focus-workspace-up; }
-    Super+Page_Down { focus-workspace-down; }
+    Super+Page_Up   { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh prev"; }
+    Super+Page_Down { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh next"; }
+    // Direct: niri_ws.sh has no "previous" verb.
     Super+Tab       { focus-workspace-previous; }
 
+    // Direct with cooldown: spawning a script per wheel tick would be worse
+    // than the niri action; the popup-close nicety is not worth the churn.
     Super+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
     Super+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
 
-    // Scratchpad approximation (named workspace; no floating overlay).
-    Super+A       { focus-workspace "scratch"; }
-    Super+Shift+A { move-window-to-workspace "scratch"; }
+    // Scratchpad approximation (named workspace; no floating overlay). The
+    // script focuses scratch, toggles back when it is already focused, and
+    // launches nautilus when the workspace has no windows.
+    Super+A       { spawn-sh "bash ~/.config/niri/scripts/niri_scratch.sh"; }
+    Super+Shift+A { spawn-sh "bash ~/.config/niri/scripts/niri_ws.sh scratch move"; }
 
     // -------------------------------------------------------------- multi-monitor
     Super+Alt+I { focus-monitor-right; }
     Super+Alt+U { focus-monitor-left; }
-    Super+Alt+Shift+I { move-column-to-monitor-right; }
-    Super+Alt+Shift+U { move-column-to-monitor-left; }
+    // Hyprland moves the active window, not the whole column.
+    Super+Alt+Shift+I { move-window-to-monitor-right; }
+    Super+Alt+Shift+U { move-window-to-monitor-left; }
     Super+Alt+P { move-workspace-to-monitor-next; }
     Super+Alt+M { spawn-sh "bash ~/.config/niri/scripts/niri_monitor_manager.sh"; }
+    Super+Alt+Shift+M { spawn-sh "bash ~/.config/niri/scripts/niri_monitor_manager.sh info"; }
 
     // ------------------------------------------------------------ theme / scale
     Super+Z       { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle scale"; }

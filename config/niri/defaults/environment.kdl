@@ -1,0 +1,72 @@
+// ============================================================================
+// Environment - seed for generated/env.kdl
+// ============================================================================
+// `environment {}` is a single-occurrence section: niri rejects a second one
+// ("duplicate node `environment`, single node expected"). The whole section
+// therefore lives in exactly one file, the installer-seeded generated/env.kdl.
+//
+// niri does NOT expand shell variables in environment values. install.sh copies
+// this template and replaces the @...@ placeholders with literal paths derived
+// from $HOME and the caller's environment. Do not edit this template for a live
+// session: edit ~/.config/niri/generated/env.kdl, then reload the config
+// (`niri msg action load-config-file`) or log in again.
+//
+// These values are seen by processes niri spawns, not by systemd user services.
+// niri-session imports the login-shell environment into the systemd user manager
+// before starting niri; keep PATH/XDG_* there too for services.
+//
+// Deliberately omitted (unchanged from the previous environment module):
+//   - XDG_CURRENT_DESKTOP / XDG_SESSION_TYPE: set by the niri session.
+//   - GDK_BACKEND: a global `wayland` value breaks the screencast portal.
+//   - HYPRLAND_LOG_WLR: Hyprland only.
+// ============================================================================
+
+environment {
+    // --- NVIDIA (kept for the author's NVIDIA rig; harmless on other GPUs) --
+    GBM_BACKEND "nvidia-drm"
+    __GLX_VENDOR_LIBRARY_NAME "nvidia"
+    LIBVA_DRIVER_NAME "nvidia"
+    NVD_BACKEND "direct"
+
+    // --- Qt ---------------------------------------------------------------
+    // niri recommends not forcing QT_QPA_PLATFORM globally unless a specific
+    // app is broken; kept to match env.lua, remove if the shell misbehaves.
+    QT_QPA_PLATFORM "wayland;xcb"
+    QT_QPA_PLATFORMTHEME "qt6ct"
+    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+    QT_AUTO_SCREEN_SCALE_FACTOR "1"
+
+    // --- SDL / Clutter ----------------------------------------------------
+    SDL_VIDEODRIVER "wayland"
+    CLUTTER_BACKEND "wayland"
+
+    // --- Electron / Chromium ----------------------------------------------
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+    XOS_WL "1"
+
+    // --- Cursor (mirrors the cursor {} block in config.kdl) ---------------
+    XCURSOR_SIZE "24"
+    XCURSOR_THEME "Bibata-Modern-Classic"
+
+    // --- Java AWT/Swing under Wayland -------------------------------------
+    _JAVA_AWT_WM_NONREPARENTING "1"
+
+    // --- Mozilla (Firefox / Thunderbird) ----------------------------------
+    MOZ_ENABLE_WAYLAND "1"
+    MOZ_DBUS_REMOTE "1"
+
+    // --- Paths (literal at install time; niri cannot expand $HOME) --------
+    // PATH puts ~/.local/bin first, where dots/davincix/theme-sync wrappers and
+    // the scene-capable xwww build live.
+    PATH "@SESSION_PATH@"
+    WALLPAPER_DIR "@WALLPAPER_DIR@"
+    SCRIPT_DIR "@SCRIPT_DIR@"
+    XDG_PICTURES_DIR "@XDG_PICTURES_DIR@"
+    XDG_VIDEOS_DIR "@XDG_VIDEOS_DIR@"
+
+    // --- Application scaling ---------------------------------------------
+    // install.sh emits these four only when settings.json has appScale != 1.0
+    // (the same guard as env.lua). Re-run `./install.sh --config-only` after
+    // changing appScale, or edit generated/env.kdl directly and reload niri.
+@APP_SCALE_ENV@
+}

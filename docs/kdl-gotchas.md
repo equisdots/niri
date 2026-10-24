@@ -49,6 +49,8 @@ to a live session.
 Everything under `generated/` is produced by a writer (a script or the shell
 backend) and must be **valid multi-line KDL**:
 
+- `env.kdl` — single-occurrence `environment {}` section, seeded by
+  `install.sh` from `defaults/environment.kdl` with literal paths
 - `user-input.kdl`, `user-animations.kdl`, `blur.kdl` — single-occurrence
   sections owned by the settings/effects writers (seeded once from `defaults/`)
 - `borders.kdl` — shell backend (`Compositor.setWindowBorders`)
@@ -71,6 +73,7 @@ definitions deep-merge over earlier ones for the same section/property.
 include "modules/layout.kdl"
 
 // Single-occurrence sections: exactly one owner each.
+include optional=true "generated/env.kdl"
 include optional=true "generated/user-input.kdl"
 include optional=true "generated/user-animations.kdl"
 include optional=true "generated/blur.kdl"
@@ -88,9 +91,11 @@ config loads before the first writer has run and still reloads when the file
 appears. Keep the `generated/` directory itself present; niri's watcher only
 sees files appear inside a directory it already knows.
 
-Some sections are single-occurrence (`input`, `animations`, `blur`): defining
-them twice, for example in a module and in a generated fragment, is a
-`niri validate` error rather than a merge.
+Some sections are single-occurrence (`environment`, `input`, `animations`,
+`blur`): defining them twice, for example in a module and in a generated
+fragment, is a `niri validate` error rather than a merge. `environment` is
+special because niri cannot expand `$HOME` in its values, so `install.sh`
+seeds it with literal paths.
 
 ## Validate
 

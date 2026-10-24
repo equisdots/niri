@@ -25,8 +25,10 @@ workspace "games"
 
 // Scratchpad approximation. Hyprland used floating special workspaces
 // (special:terminal, special:files, special:music). niri has no floating
-// overlay toggle, so a plain named workspace is used: focus it with Super+A,
-// move windows to it with Super+Shift+A (see modules/keybinds.kdl).
+// overlay toggle, so a plain named workspace is used: Super+A toggles it
+// (scripts/niri_scratch.sh focuses scratch, returns to the previous workspace
+// when already there, and launches nautilus when scratch is empty), and
+// Super+Shift+A moves the focused window to it (see modules/keybinds.kdl).
 workspace "scratch"
 
 // Per-monitor boot defaults (Hyprland workspace_rule default=true). Uncomment
