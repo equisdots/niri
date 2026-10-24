@@ -60,6 +60,13 @@ APP_ID="$1"
 WIDTH="$2"
 HEIGHT="$3"
 shift 3
+# Apps whose Wayland app_id differs from the launcher name: match a stable
+# substring instead of the exact id (VS Code Insiders reports
+# com.microsoft.VSCodeInsiders).
+APP_MATCH="$APP_ID"
+case "$APP_ID" in
+    code-insiders) APP_MATCH="insiders" ;;
+esac
 [[ "${1:-}" == "--" ]] && shift
 if [[ $# -eq 0 ]]; then
     set -- "$APP_ID"
@@ -110,12 +117,12 @@ fi
 # MODE=app requires a matching app_id; MODE=any accepts any new window.
 find_id() {
     local mode="$1"
-    jq -R -r --arg app "$APP_ID" --arg mode "$mode" --slurpfile before "$BEFORE" '
+    jq -R -r --arg app "$APP_MATCH" --arg mode "$mode" --slurpfile before "$BEFORE" '
         def old_ids: [$before[0][]? | .id];
         def matching($w):
             ($w.id // -1) as $id
             | select((old_ids | index($id)) == null)
-            | select($mode == "any" or (($w.app_id // "") == $app))
+            | select($mode == "any" or (($w.app_id // "") | ascii_downcase | contains($app | ascii_downcase)))
             | $id;
         fromjson?
         | if type != "object" then empty
@@ -129,31 +136,33 @@ find_id() {
 # poll_windows MODE: fallback if the stream reconnects or an event is missed.
 poll_windows() {
     local mode="$1"
-    niri msg --json windows 2>/dev/null | jq -r --arg app "$APP_ID" --arg mode "$mode" --slurpfile before "$BEFORE" '
+    niri msg --json windows 2>/dev/null | jq -r --arg app "$APP_MATCH" --arg mode "$mode" --slurpfile before "$BEFORE" '
         def old_ids: [$before[0][]? | .id];
         [ .[]?
           | select((old_ids | index(.id)) == null)
-          | select($mode == "any" or ((.app_id // "") == $app))
+          | select($mode == "any" or ((.app_id // "") | ascii_downcase | contains($app | ascii_downcase)))
           | .id
         ] | last // empty
     ' 2>/dev/null || true
 }
 
 DEADLINE=$((SECONDS + TIMEOUT))
+START=$SECONDS
 WIN_ID=""
 while (( SECONDS < DEADLINE )); do
     WIN_ID="$(find_id app || true)"
     [[ -n "$WIN_ID" ]] || WIN_ID="$(poll_windows app || true)"
     [[ -n "$WIN_ID" ]] && break
+    # Some apps report an app_id/native class different from the requested one.
+    # After a short grace period, accept any new window from this launch so a
+    # mismatch does not stall the bind for the full timeout.
+    if (( SECONDS - START >= 3 )); then
+        WIN_ID="$(find_id any || true)"
+        [[ -n "$WIN_ID" ]] || WIN_ID="$(poll_windows any || true)"
+        [[ -n "$WIN_ID" ]] && break
+    fi
     sleep 0.1
 done
-
-# Some apps report an app_id/native class different from the requested one.
-# By then any other new window from this launch is almost certainly ours.
-if [[ -z "$WIN_ID" ]]; then
-    WIN_ID="$(poll_windows any || true)"
-    [[ -n "$WIN_ID" ]] || WIN_ID="$(find_id any || true)"
-fi
 
 if [[ -z "$WIN_ID" ]]; then
     notify "Floating app" "Timed out waiting for '$APP_ID' (${TIMEOUT}s)"
@@ -174,11 +183,29 @@ if [[ "$IS_FLOATING" != "true" ]]; then
     fi
 fi
 
-# SetFixed logical pixels. These actions work for floating windows in 26.04.
-niri msg action set-window-width --id "$WIN_ID" "$WIDTH" >/dev/null 2>&1 \
-    || warn "could not set width ${WIDTH}px on window $WIN_ID"
-niri msg action set-window-height --id "$WIN_ID" "$HEIGHT" >/dev/null 2>&1 \
-    || warn "could not set height ${HEIGHT}px on window $WIN_ID"
+# SetFixed logical pixels. The client may commit its own initial size after
+# WindowOpenedOrChanged, which niri applies after our request; retry until the
+# requested window_size sticks (usually 1-2 attempts), then center.
+window_size() {
+    niri msg --json windows 2>/dev/null \
+        | jq -r --argjson id "$WIN_ID" '.[]? | select(.id == $id) | "\(.layout.window_size[0]) \(.layout.window_size[1])"' 2>/dev/null \
+        | head -n 1
+}
+
+SIZED=0
+for _attempt in 1 2 3 4 5; do
+    niri msg action set-window-width --id "$WIN_ID" "$WIDTH" >/dev/null 2>&1 || true
+    niri msg action set-window-height --id "$WIN_ID" "$HEIGHT" >/dev/null 2>&1 || true
+    sleep 0.2
+    read -r CUR_W CUR_H <<< "$(window_size || true)"
+    if [[ "$CUR_W" == "$WIDTH" && "$CUR_H" == "$HEIGHT" ]]; then
+        SIZED=1
+        break
+    fi
+done
+if (( SIZED == 0 )); then
+    warn "could not size window $WIN_ID to ${WIDTH}x${HEIGHT} (got ${CUR_W:-?}x${CUR_H:-?})"
+fi
 
 niri msg action center-window --id "$WIN_ID" >/dev/null 2>&1 \
     || warn "could not center window $WIN_ID"

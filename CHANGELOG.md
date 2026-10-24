@@ -106,6 +106,12 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
 
 ### Fixed
 
+- `scripts/niri_floating_app.sh`: retry the `set-window-width`/`set-window-height`
+  pair until the client's initial commit settles (the first request could be
+  overwritten by the app's own size), match VS Code Insiders' real
+  `com.microsoft.VSCodeInsiders` app_id, and accept any new window after a
+  short grace period instead of stalling for the full timeout. Verified live
+  against nested niri 26.04 with kitty and VS Code Insiders.
 - Single-occurrence sections: `input`, `animations` and `blur` are now owned by
   one generated fragment each (`generated/user-input.kdl`,
   `generated/user-animations.kdl`, `generated/blur.kdl`) seeded from
