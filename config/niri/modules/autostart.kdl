@@ -8,15 +8,24 @@
 // with `systemctl --user add-wants niri.service <unit>` is preferable; the
 // units shipped by this repo live in systemd/ (see systemd/README.md).
 //
-// NOTE: idle/lock is NOT started here. Hyprland's autostart launched hypridle;
-// under niri that is replaced by swayidle (using
-// `niri msg action power-off-monitors` and the shared lock script), driven by
-// systemd/swayidle.service or by scripts/niri_idle_mode.sh. See the README.
+// IDLE/LOCK OWNERSHIP: this file starts idle/lock at session boot through
+// scripts/niri_idle_mode.sh boot, matching Hyprland's `idle-mode.sh boot`.
+// niri_idle_mode.sh uses systemd's swayidle.service when that unit is
+// installed, otherwise it starts a detached swayidle process. Autostart is the
+// owner: do not ALSO attach swayidle.service to niri.service or start a second
+// swayidle by hand (a second daemon would race the timers).
+//
+// Hyprland-only items are deliberately not ported: restore-monitors.sh,
+// hyprctl setcursor and HYPRLAND_LOG_WLR. niri owns output configuration
+// through generated/outputs.kdl and the cursor through cursor {} in config.kdl.
 // ============================================================================
 
 // Secret service and authentication agent (GNOME keyring + polkit).
-spawn-sh-at-startup "gnome-keyring-daemon --start --components=secrets,pkcs11"
-spawn-sh-at-startup "/usr/lib/polkit-kde-authentication-agent-1 || /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 || /usr/libexec/polkit-kde-authentication-agent-1"
+// The pam_kwallet_init fallback matches Hyprland for KDE users; the second
+// gnome-keyring call only starts the secrets component when kwallet took over.
+spawn-sh-at-startup "/usr/lib/pam_kwallet_init || gnome-keyring-daemon --start --components=secrets,pkcs11"
+spawn-sh-at-startup "gnome-keyring-daemon --start --components=secrets 2>/dev/null"
+spawn-sh-at-startup "/usr/lib/polkit-kde-authentication-agent-1 || /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 || /usr/libexec/polkit-kde-authentication-agent-1 || /usr/libexec/polkit-gnome-authentication-agent-1 || /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1"
 
 // Portal environment: publish the niri Wayland display to the systemd user
 // manager so portals and systemd-launched apps inherit it.
@@ -30,8 +39,9 @@ spawn-sh-at-startup "pkill -f 'quickshell.*Shell.qml' 2>/dev/null || true"
 spawn-sh-at-startup "xwww-daemon"
 
 // Quickshell: single entry point (Shell.qml loads Main + TopBar + Floating).
-// The binary is `quickshell`, falling back to `qs`.
-spawn-sh-at-startup "BIN=; if command -v quickshell >/dev/null 2>&1; then BIN=quickshell; elif command -v qs >/dev/null 2>&1; then BIN=qs; fi; [ -n \"$BIN\" ] && exec $BIN -p ~/.config/hypr/scripts/quickshell/Shell.qml || true"
+// The binary is `quickshell`, falling back to `qs`. QT_LOGGING_RULES scopes the
+// harmless QWaylandTextInputv3 focus diagnostics, exactly like Hyprland.
+spawn-sh-at-startup "BIN=; if command -v quickshell >/dev/null 2>&1; then BIN=quickshell; elif command -v qs >/dev/null 2>&1; then BIN=qs; fi; [ -n \"$BIN\" ] && exec env QT_LOGGING_RULES=qt.qpa.wayland.textinput.warning=false $BIN -p ~/.config/hypr/scripts/quickshell/Shell.qml || true"
 
 // Focus-time daemon for the shell panel.
 spawn-sh-at-startup "python3 ~/.config/hypr/scripts/quickshell/ui/panels/focustime/focus_daemon.py &"
@@ -49,6 +59,10 @@ spawn-sh-at-startup "wl-paste --type image --watch cliphist store"
 // System tray applets.
 spawn-sh-at-startup "nm-applet --indicator"
 spawn-sh-at-startup "blueman-applet"
+
+// Idle management: honors the saved idle-mode (awake = no auto lock/suspend;
+// normal = timers on). Toggle anytime with the Idle & sleep widget (Super+P).
+spawn-sh-at-startup "~/.config/niri/scripts/niri_idle_mode.sh boot"
 
 // Volume and update listeners (shared scripts).
 spawn-sh-at-startup "~/.config/hypr/scripts/volume_listener.sh"

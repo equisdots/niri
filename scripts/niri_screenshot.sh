@@ -11,6 +11,7 @@
 #   niri_screenshot.sh                          open the equisdots overlay
 #   niri_screenshot.sh --edit                    overlay, start in edit mode
 #   niri_screenshot.sh --full                    focused output (native action)
+#   niri_screenshot.sh --full --edit             focused output -> satty editor
 #   niri_screenshot.sh --window                  focused window (native action)
 #   niri_screenshot.sh --geometry "X,Y WxH"      capture that region (grim)
 #   niri_screenshot.sh --geometry "X,Y WxH" --record [audio args]
@@ -138,6 +139,29 @@ if [[ "$FULL" == 1 || -n "$GEOMETRY" ]]; then
         else
             exec bash "$SCRIPT_DIR/niri_record.sh" start screen
         fi
+    fi
+
+    if [[ "$FULL" == 1 && -z "$GEOMETRY" && "$EDIT" == 1 ]]; then
+        # Full capture then annotate. The native screenshot action saves a file
+        # asynchronously and formats screenshot-path, so grim gives us a
+        # synchronous still to pipe into satty. Capture the focused output
+        # (matching --full / screenshot-screen); fall back to grim's whole
+        # layout if focused-output is unavailable.
+        require_cmd grim satty
+        STAMP="$(date +'%Y-%m-%d-%H%M%S')"
+        FILE="$SAVE_DIR/Screenshot_${STAMP}.png"
+        OUTPUT_NAME="$(niri msg --json focused-output 2>/dev/null | jq -r '.name // empty' 2>/dev/null || true)"
+        if [[ -n "$OUTPUT_NAME" ]]; then
+            grim -o "$OUTPUT_NAME" - | GSK_RENDERER=gl satty \
+                --filename - --output-filename "$FILE" \
+                --init-tool brush --copy-command wl-copy
+        else
+            grim - | GSK_RENDERER=gl satty \
+                --filename - --output-filename "$FILE" \
+                --init-tool brush --copy-command wl-copy
+        fi
+        [[ -s "$FILE" ]] && notify_icon "Screenshot" "Saved: $(basename "$FILE")" "$FILE"
+        exit 0
     fi
 
     if [[ "$FULL" == 1 && -z "$GEOMETRY" ]]; then

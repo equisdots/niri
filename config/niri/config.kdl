@@ -15,11 +15,12 @@
 // ============================================================================
 
 // --- Static modules, in override order --------------------------------------
-include "modules/environment.kdl"
-// input {} and animations {} are single-occurrence sections: they live in
-// generated/user-input.kdl and generated/user-animations.kdl (seeded from defaults/
-// at install time, then owned by the settings writer), so they are not
-// included from modules/ here.
+// environment {}, input {} and animations {} are single-occurrence sections, so
+// they are not defined in modules/. environment lives in generated/env.kdl
+// (seeded from defaults/environment.kdl by install.sh with literal paths);
+// input and animations live in generated/user-input.kdl and
+// generated/user-animations.kdl (seeded from defaults/ at install time, then
+// owned by the settings writer).
 include "modules/layout.kdl"
 include "modules/workspaces.kdl"
 include "modules/window-rules.kdl"
@@ -43,7 +44,7 @@ prefer-no-csd
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 // Cursor theme, exported as XCURSOR_THEME/XCURSOR_SIZE to spawned clients.
-// Matches the XCURSOR_* values in modules/environment.kdl.
+// Matches the XCURSOR_* values in generated/env.kdl.
 cursor {
     xcursor-theme "Bibata-Modern-Classic"
     xcursor-size 24
@@ -79,6 +80,8 @@ xwayland-satellite {
 // appears. Includes are positional and later settings override earlier ones, so
 // these sit after the modules AND after the top-level options above: the
 // palette border colors, generated effects and saved outputs take precedence.
+// environment is a single-occurrence section owned by the installer seed.
+include optional=true "generated/env.kdl"
 include optional=true "generated/user-input.kdl"
 include optional=true "generated/user-animations.kdl"
 include optional=true "generated/blur.kdl"

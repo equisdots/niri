@@ -84,26 +84,51 @@ detect_distro() {
 # --- Package installation ---------------------------------------------------
 CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify
-    pipewire wireplumber)
-OPT_ARCH=(satty gpu-screen-recorder zbar)
+    pipewire wireplumber
+    kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
+    network-manager-applet blueman gnome-keyring polkit-gnome qt6ct
+    noto-fonts noto-fonts-emoji adw-gtk-theme papirus-icon-theme
+    fd ripgrep python imagemagick ffmpeg cava power-profiles-daemon)
+OPT_ARCH=(satty gpu-screen-recorder zbar envycontrol bibata-cursor-theme)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify
-    pipewire wireplumber)
-OPT_FEDORA=(satty gpu-screen-recorder zbar)
+    pipewire wireplumber
+    kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
+    network-manager-applet blueman gnome-keyring polkit-gnome qt6ct
+    google-noto-sans-fonts google-noto-emoji-fonts adw-gtk3-theme papirus-icon-theme
+    fd-find ripgrep python3 ImageMagick ffmpeg-free cava power-profiles-daemon)
+OPT_FEDORA=(satty gpu-screen-recorder zbar envycontrol bibata-cursor-theme)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify-bin
-    pipewire wireplumber)
-OPT_DEBIAN=(satty gpu-screen-recorder zbar-tools)
-# NOTE: `quickshell` (the equisdots shell/overlay), `grim`, `slurp` and
+    pipewire wireplumber
+    kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
+    network-manager-gnome blueman gnome-keyring policykit-1-gnome qt6ct
+    fonts-noto-core fonts-noto-color-emoji papirus-icon-theme
+    fd-find ripgrep python3 imagemagick ffmpeg cava power-profiles-daemon)
+OPT_DEBIAN=(satty gpu-screen-recorder-cli zbar-tools envycontrol bibata-cursor-theme adw-gtk3)
+# NOTE: `quickshell` is the equisdots shell/overlay. `grim`, `slurp` and
 # `wl-clipboard` provide the screenshot overlay and direct capture; `satty`
-# annotates, `zbar` (zbarimg) scans QR codes, and `gpu-screen-recorder` is the
-# SAME screen recorder Hyprland uses (driven by niri/scripts/niri_record.sh;
-# compositor agnostic, wlr-screencopy). gpu-screen-recorder/satty/zbar may live
-# in the AUR / a COPR / an extra repo, so they are optional (a missing package
-# only warns). No separate notification daemon (mako/dunst) is installed on
-# purpose: the Quickshell shell registers org.freedesktop.Notifications itself.
+# annotates, `zbar` (zbarimg on Arch/Fedora, zbar-tools on Debian) scans QR
+# codes, and `gpu-screen-recorder` is the SAME screen recorder Hyprland uses
+# (driven by niri/scripts/niri_record.sh; compositor-agnostic, wlr-screencopy).
+#
+# The rest of CORE is the user-facing tool set the keybinds and bar expect:
+# kitty (terminal), rofi (emoji picker), playerctl (media keys), brightnessctl,
+# pamixer, ddcutil, nautilus, pavucontrol, nm-applet, blueman, gnome-keyring,
+# the polkit agent, qt6ct, Noto fonts, adw-gtk3 and Papirus icons, fd/ripgrep,
+# python, ImageMagick, ffmpeg, cava and power-profiles-daemon.
+# Distro names differ: adw-gtk3 ships as `adw-gtk-theme` on Arch and
+# `adw-gtk3-theme` on Fedora; fd is `fd-find` on Fedora/Debian; the polkit
+# agent is `policykit-1-gnome` on Debian; gpu-screen-recorder is provided by
+# `gpu-screen-recorder-cli` on Debian.
+#
+# OPTIONAL packages may live in the AUR / a COPR / a PPA or simply not be
+# packaged for a distro. They are installed one by one, so a missing name only
+# warns and never blocks the rest. No separate notification daemon
+# (mako/dunst) is installed on purpose: the Quickshell shell registers
+# org.freedesktop.Notifications itself.
 
 sudo_cmd() {
     if [[ "$(id -u)" == "0" ]]; then
@@ -123,25 +148,98 @@ install_packages() {
         pacman)
             sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}" \
                 || warn "core packages failed; install niri manually: sudo pacman -S niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk"
-            sudo_cmd pacman -S --needed --noconfirm "${OPT_ARCH[@]}" 2>/dev/null \
-                || warn "optional packages skipped: ${OPT_ARCH[*]}"
+            local p
+            for p in "${OPT_ARCH[@]}"; do
+                sudo_cmd pacman -S --needed --noconfirm "$p" 2>/dev/null \
+                    || warn "optional package skipped: $p"
+            done
             ;;
         dnf)
             sudo_cmd dnf install -y "${CORE_FEDORA[@]}" \
                 || warn "some packages failed; niri may need a COPR (see https://yalter.github.io/niri)"
-            sudo_cmd dnf install -y "${OPT_FEDORA[@]}" 2>/dev/null \
-                || warn "optional packages skipped: ${OPT_FEDORA[*]}"
+            local p
+            for p in "${OPT_FEDORA[@]}"; do
+                sudo_cmd dnf install -y "$p" 2>/dev/null \
+                    || warn "optional package skipped: $p"
+            done
             ;;
         apt)
             sudo_cmd apt-get update
             sudo_cmd apt-get install -y "${CORE_DEBIAN[@]}" || warn "some packages failed to install"
-            sudo_cmd apt-get install -y "${OPT_DEBIAN[@]}" 2>/dev/null \
-                || warn "optional packages skipped: ${OPT_DEBIAN[*]}"
+            local p
+            for p in "${OPT_DEBIAN[@]}"; do
+                sudo_cmd apt-get install -y "$p" 2>/dev/null \
+                    || warn "optional package skipped: $p"
+            done
             ;;
     esac
 }
 
 # --- Config deployment ------------------------------------------------------
+# seed_generated_env DEST: write generated/env.kdl with literal paths.
+# `environment {}` is a single-occurrence section and niri cannot expand $HOME,
+# so the whole section is generated here from defaults/environment.kdl. Existing
+# files are never overwritten (edit the generated file directly afterwards).
+seed_generated_env() {
+    local dest="$1"
+    local out="$dest/generated/env.kdl"
+    local template="$SCRIPT_DIR/config/niri/defaults/environment.kdl"
+
+    [[ -f "$out" ]] && return 0
+    [[ -f "$template" ]] || { warn "missing env seed template: $template"; return 1; }
+
+    # ~/.local/bin first, then the caller's PATH without duplicates.
+    local local_bin="$HOME/.local/bin"
+    local session_path="$local_bin"
+    local -a path_parts=()
+    local p
+    IFS=: read -r -a path_parts <<< "${PATH:-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin}"
+    for p in "${path_parts[@]}"; do
+        [[ -n "$p" ]] || continue
+        [[ ":$session_path:" == *":$p:"* ]] && continue
+        session_path="$session_path:$p"
+    done
+
+    local wallpaper_dir="$HOME/.config/hypr/wallpapers"
+    local scripts_dir="$HOME/.config/hypr/scripts"
+    local pictures_dir="${XDG_PICTURES_DIR:-$HOME/Pictures}"
+    local videos_dir="${XDG_VIDEOS_DIR:-$HOME/Videos}"
+
+    # appScale parity with env.lua: only emit the derived block when != 1.0.
+    local app_scale="1.0"
+    if have jq && [[ -f "$HOME/.config/hypr/settings.json" ]]; then
+        app_scale="$(jq -r '.appScale // 1.0' "$HOME/.config/hypr/settings.json" 2>/dev/null || printf '1.0')"
+    fi
+    [[ "$app_scale" =~ ^[0-9]+([.][0-9]+)?$ ]] || app_scale="1.0"
+
+    local app_scale_env=""
+    if awk -v s="$app_scale" 'BEGIN { exit !(s + 0 != 1.0) }'; then
+        local gdk_int gdk_dpi electron_factor xcursor_size
+        read -r gdk_int gdk_dpi electron_factor xcursor_size < <(
+            awk -v s="$app_scale" 'BEGIN {
+                gi = int(s + 0.0001); if (gi < 1) gi = 1;
+                printf "%d %.4f %s %d\n", gi, s / gi, s, int(24 * s)
+            }'
+        )
+        app_scale_env="$(printf '    GDK_SCALE "%s"\n    GDK_DPI_SCALE "%s"\n    ELECTRON_FORCE_DEVICE_SCALE_FACTOR "%s"\n    XCURSOR_SIZE "%s"' \
+            "$gdk_int" "$gdk_dpi" "$electron_factor" "$xcursor_size")"
+    fi
+
+    local line
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        line="${line//@SESSION_PATH@/$session_path}"
+        line="${line//@WALLPAPER_DIR@/$wallpaper_dir}"
+        line="${line//@SCRIPT_DIR@/$scripts_dir}"
+        line="${line//@XDG_PICTURES_DIR@/$pictures_dir}"
+        line="${line//@XDG_VIDEOS_DIR@/$videos_dir}"
+        line="${line//@APP_SCALE_ENV@/$app_scale_env}"
+        printf '%s\n' "$line"
+    done < "$template" > "$out"
+
+    chmod 644 "$out" 2>/dev/null || true
+    log "seeded generated/env.kdl (literal PATH/XDG paths, appScale $app_scale)"
+}
+
 deploy_config() {
     local dest="$HOME/.config/niri"
     mkdir -p "$dest"
@@ -167,6 +265,10 @@ deploy_config() {
             cp "$SCRIPT_DIR/config/niri/defaults/$src.kdl" "$dest/generated/$dst.kdl"
         fi
     done
+
+    # environment {} is the fourth single-occurrence section and contains
+    # literal paths, so it is generated rather than copied verbatim.
+    seed_generated_env "$dest"
 
     mkdir -p "$dest/scripts"
     cp -R "$SCRIPT_DIR/scripts/." "$dest/scripts/"
@@ -238,6 +340,33 @@ maybe_call_meta() {
     fi
 }
 
+# --- Shared payload check ---------------------------------------------------
+# This repository deliberately does NOT ship the shared scripts under
+# ~/.config/hypr/scripts: they belong to the equisdots Hyprland/shell payload
+# and are deployed by the niri-meta installer (niri-meta/bin/dotsniri install).
+# Warn clearly instead of duplicating them here.
+check_shared_payload() {
+    local dir="$HOME/.config/hypr/scripts"
+    local -a needed=(qs_manager.sh lock.sh volume.sh brightness.sh reload.sh
+        init.sh volume_listener.sh update_notifier.sh gpu-mode.sh)
+    local -a missing=()
+    local f
+    for f in "${needed[@]}"; do
+        [[ -e "$dir/$f" ]] || missing+=("$f")
+    done
+
+    if (( ${#missing[@]} > 0 )); then
+        warn "shared equisdots scripts are missing under $dir:"
+        warn "  ${missing[*]}"
+        warn "they are provided by the niri-meta deploy, not by this repository;"
+        warn "run 'dotsniri install' (niri-meta) before starting niri."
+    else
+        info "shared equisdots scripts found under $dir (provided by niri-meta)."
+    fi
+    [[ -d "$dir/quickshell" ]] \
+        || warn "Quickshell payload missing at $dir/quickshell (provided by niri-meta)."
+}
+
 # --- Main -------------------------------------------------------------------
 main() {
     echo "equisdots niri installer"
@@ -261,12 +390,13 @@ main() {
     install_units
     install_session_files
     maybe_call_meta
+    check_shared_payload
 
     echo
     log "done."
     info "Validate the config:  niri validate -c ~/.config/niri/config.kdl"
     info "Start the session:    niri-session   (or pick 'Niri' in the display manager)"
-    info "Attach user units:    systemctl --user add-wants niri.service swayidle.service"
+    info "Idle/lock starts from modules/autostart.kdl (niri_idle_mode.sh boot); do not attach swayidle.service separately."
 }
 
 main "$@"
