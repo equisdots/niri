@@ -123,6 +123,7 @@ ensure_kitty_shader_config() {
         printf 'cursor_trail_start_threshold 0\n' >> "$conf"; added=1
     fi
     (( added )) && log "kitty shaders: enabled the lightning trail in kitty.conf"
+    return 0
 }
 
 install_kitty() {
