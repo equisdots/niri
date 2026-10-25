@@ -88,7 +88,7 @@ detect_distro() {
 # --- Package installation ---------------------------------------------------
 CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp satty zbar wl-clipboard cliphist libnotify
-    gpu-screen-recorder mpvpaper
+    gpu-screen-recorder
     pipewire pipewire-alsa pipewire-pulse wireplumber
     networkmanager bluez bluez-utils
     kitty rofi rofi-emoji playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
@@ -101,7 +101,7 @@ CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-por
     xdg-utils xdg-user-dirs
     zsh starship
     git rsync curl wget tar unzip base-devel)
-OPT_ARCH=(envycontrol bibata-cursor-theme)
+OPT_ARCH=(mpvpaper envycontrol bibata-cursor-theme)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp zbar wl-clipboard cliphist libnotify
@@ -140,7 +140,6 @@ OPT_DEBIAN=(satty gpu-screen-recorder-cli mpvpaper rofi-emoji starship envycontr
 # annotates, `zbar` (zbarimg on Arch/Fedora, zbar-tools on Debian) scans QR
 # codes, and `gpu-screen-recorder` is the SAME screen recorder Hyprland uses
 # (driven by niri/scripts/niri_record.sh; compositor-agnostic, wlr-screencopy).
-# `mpvpaper` applies video wallpapers through davincix.
 #
 # `qt6-multimedia` is not optional: DavincixPicker.qml and DavincixCard.qml
 # import QtMultimedia, so without the QML module the whole wallpaper picker
@@ -160,7 +159,11 @@ OPT_DEBIAN=(satty gpu-screen-recorder-cli mpvpaper rofi-emoji starship envycontr
 #
 # On Arch, `install.sh` ensures an AUR helper (paru, yay, or a fresh yay build
 # with git + base-devel) exactly like the Hyprland installer, so AUR-only
-# optional packages can be installed instead of silently skipped.
+# optional packages can be installed instead of silently skipped. `mpvpaper`
+# (video wallpapers) is AUR-only and lives in OPT_ARCH, never in the core
+# transaction: a missing AUR package must not abort the core install. If the
+# core transaction still fails, every core package is retried individually so
+# essentials such as `qt6-multimedia` land even when another name is missing.
 #
 # OPTIONAL packages may live in the AUR / a COPR / a PPA or simply not be
 # packaged for a distro. They are installed one by one, so a missing name only
@@ -231,9 +234,14 @@ install_packages() {
     info "installing packages with $PKG (niri, portals, shell runtime, capture tools)"
     case "$PKG" in
         pacman)
-            sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}" \
-                || warn "core packages failed; install niri manually: sudo pacman -S niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk qt6-multimedia"
             local p
+            if ! sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}"; then
+                warn "core package transaction failed; retrying each package individually"
+                for p in "${CORE_ARCH[@]}"; do
+                    sudo_cmd pacman -S --needed --noconfirm "$p" 2>/dev/null \
+                        || warn "core package skipped: $p"
+                done
+            fi
             if ensure_aur_helper; then
                 for p in "${OPT_ARCH[@]}"; do
                     "$AUR_HELPER" -S --needed --noconfirm "$p" 2>/dev/null \
