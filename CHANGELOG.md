@@ -26,6 +26,10 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
 - `config/niri/modules/layer-rules.kdl`: `place-within-backdrop true` for the
   `xwww-daemon` layer, so the wallpaper fills the Overview backdrop and the
   space between workspaces instead of staying inside a workspace rectangle.
+- `config/niri/modules/layout.kdl`: `background-color "transparent"` so the
+  wallpaper placed in the Overview backdrop also stays visible on the normal
+  workspace. An opaque workspace background covered it (wallpaper only showed
+  in the Overview).
 - `config/niri/modules/layout.kdl`: new windows open at `proportion 1.0`
   (full output width) and `1.0` is in `preset-column-widths`, matching the
   wide-window behavior of the shared niri configs. Existing windows are not
