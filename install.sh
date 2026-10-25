@@ -204,7 +204,12 @@ seed_generated_env() {
         session_path="$session_path:$p"
     done
 
-    local wallpaper_dir="$HOME/.config/hypr/wallpapers"
+    local wallpaper_dir=""
+    if have jq && [[ -f "$HOME/.config/hypr/settings.json" ]]; then
+        wallpaper_dir="$(jq -r '.wallpaperDir // empty' "$HOME/.config/hypr/settings.json" 2>/dev/null || true)"
+    fi
+    wallpaper_dir="${wallpaper_dir:-$HOME/.config/hypr/wallpapers}"
+    wallpaper_dir="${wallpaper_dir/#\~/$HOME}"
     local scripts_dir="$HOME/.config/hypr/scripts"
     local pictures_dir="${XDG_PICTURES_DIR:-$HOME/Pictures}"
     local videos_dir="${XDG_VIDEOS_DIR:-$HOME/Videos}"

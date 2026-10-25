@@ -37,7 +37,7 @@ binds {
     Super+C { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle clipboard"; }
     Super+D { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle applauncher"; }
     Super+B { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle battery"; }
-    Super+W { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle wallpaper"; }
+    Super+W { spawn-sh "bash ~/.config/niri/scripts/niri_wallpaper.sh"; }
     Super+S { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle calendar"; }
     Super+N { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle network"; }
     Super+V { spawn-sh "bash ~/.config/hypr/scripts/qs_manager.sh toggle volume"; }
