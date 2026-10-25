@@ -25,6 +25,7 @@ binds {
     // ------------------------------------------------------------- applications
     Super+Return { spawn "kitty"; }
     Super+T      { spawn "kitty"; }
+    Super+Shift+Return { spawn-sh "bash ~/.config/niri/scripts/niri_split_pair.sh -- kitty"; }
     Super+Shift+K { spawn-sh "bash ~/.config/niri/scripts/niri_floating_app.sh kitty 900 560 -- kitty"; }
     Super+Shift+D { spawn-sh "bash ~/.config/niri/scripts/niri_floating_app.sh code-insiders 1200 800 -- code-insiders -n"; }
     Super+E      { spawn "nautilus"; }
@@ -147,6 +148,9 @@ binds {
     Super+Shift+J { move-window-down; }
 
     // -------------------------------------------------------------------- resize
+    // Cycle the configured preset widths (1.0 -> 2/3 -> 1/2 -> 1/3).
+    Super+Ctrl+R       { switch-preset-column-width; }
+    Super+Ctrl+Shift+R { switch-preset-column-width-back; }
     Super+Ctrl+Left  { set-column-width "-5%"; }
     Super+Ctrl+Right { set-column-width "+5%"; }
     Super+Ctrl+Up    { set-window-height "-5%"; }

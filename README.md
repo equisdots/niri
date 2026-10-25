@@ -206,6 +206,11 @@ These are deliberate; see the comments in each module.
   `scripts/niri_ws.sh`, which closes Quickshell popups first; wheel scrolling
   and `Super+Tab` stay direct niri actions because the script has no interface
   for them (and a process per wheel tick would be worse).
+- **Terminal split pair.** `Super+Shift+Return` runs
+  `scripts/niri_split_pair.sh -- kitty`: it opens two kitty windows, focuses
+  each new window by id, and sets both columns to 50% so they sit side by side.
+  `NIRI_SPLIT_WIDTH` changes the width. `Super+Ctrl+R` /
+  `Super+Ctrl+Shift+R` cycle the preset widths for any focused column.
 - **Floating terminal/editor.** `Super+Shift+K` launches a centered floating
   kitty (900x560) and `Super+Shift+D` a centered floating VS Code Insiders
   (1200x800), matching Hyprland. `scripts/niri_floating_app.sh` snapshots the
@@ -290,6 +295,8 @@ are the binds changed in the latest parity pass (niri 26.04 action names):
 
 | Bind | Action |
 | --- | --- |
+| `Super+Shift+Return` | Open two kitty terminals as a 50/50 column pair (`scripts/niri_split_pair.sh`) |
+| `Super+Ctrl+R` / `Super+Ctrl+Shift+R` | Cycle preset column widths forward/back (1.0, 2/3, 1/2, 1/3) |
 | `Super+Shift+K` | Floating centered kitty 900x560 (`scripts/niri_floating_app.sh`) |
 | `Super+Shift+D` | Floating centered VS Code Insiders 1200x800 (`scripts/niri_floating_app.sh`) |
 | `Super+Shift+S` | Bar editor (unchanged; `Super+Shift+D` no longer opens it) |

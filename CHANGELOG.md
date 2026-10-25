@@ -37,6 +37,9 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
 - `config/niri/modules/window-rules.kdl`: the browser workspace rule now
   covers `brave-browser`, LibreWolf, Zen, Vivaldi, Edge, Floorp and qutebrowser
   in addition to Firefox/Chromium/Chrome.
+- `scripts/niri_split_pair.sh` + `Super+Shift+Return`: opens two kitty
+  terminals and sets both columns to 50% for a side-by-side pair. `Super+Ctrl+R`
+  and `Super+Ctrl+Shift+R` cycle the preset column widths forward/back.
 - `install.sh`: package parity with the Hyprland installer. Core now includes
   `qt6-multimedia` (required by the davincix wallpaper picker/video previews),
   `inotify-tools` (live settings/widget watchers), `socat` (nyx IPC), PipeWire
