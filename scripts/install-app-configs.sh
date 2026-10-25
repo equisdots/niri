@@ -12,6 +12,7 @@
 #   ./install-app-configs.sh --replace-nvim  replace an existing ~/.config/nvim
 #   ./install-app-configs.sh --no-kitty --no-starship --no-nvim --no-font
 #   ./install-app-configs.sh --no-xtop --no-scenes --no-system-font
+#   ./install-app-configs.sh --no-xfetch     skip the xfetch release install
 #   ./install-app-configs.sh --dry-run       print the plan, change nothing
 #
 # Rofi and cava configs are deployed by `niri/install.sh` and `dotsniri deploy`
@@ -29,6 +30,7 @@ DO_STARSHIP=1
 DO_NVIM=1
 DO_FONT=1
 DO_XTOP=1
+DO_XFETCH=1
 DO_SCENES=1
 DO_SYSTEM_FONT=1
 REPLACE_NVIM=0
@@ -53,6 +55,7 @@ while [[ $# -gt 0 ]]; do
         --no-nvim)      DO_NVIM=0 ;;
         --no-font)      DO_FONT=0 ;;
         --no-xtop)      DO_XTOP=0 ;;
+        --no-xfetch)    DO_XFETCH=0 ;;
         --no-scenes)    DO_SCENES=0 ;;
         --no-wallpapers) DO_SCENES=0 ;;
         --no-system-font) DO_SYSTEM_FONT=0 ;;
@@ -69,6 +72,7 @@ done
 # Test/automation escape hatches (the niri-meta install inherits the env).
 [[ "${DOTSNIRI_NO_SYSTEM_FONT:-0}" == "1" ]] && DO_SYSTEM_FONT=0
 [[ "${DOTSNIRI_NO_XTOP:-0}" == "1" ]] && DO_XTOP=0
+[[ "${DOTSNIRI_NO_XFETCH:-0}" == "1" ]] && DO_XFETCH=0
 [[ "${DOTSNIRI_NO_SCENES:-0}" == "1" ]] && DO_SCENES=0
 
 if (( DRY_RUN )); then
@@ -78,6 +82,7 @@ if (( DRY_RUN )); then
     (( DO_STARSHIP )) && log "  - clone xscriptor-colors/terminal and run prompts/starship/install.sh"
     (( DO_NVIM )) && log "  - clone xscriptor-colors/nvim -> $CONFIG_DIR/nvim (existing: $([[ -d "$CONFIG_DIR/nvim" ]] && echo keep || echo create))"
     (( DO_XTOP )) && log "  - build/install xtop -> $HOME/.local/bin/xtop"
+    (( DO_XFETCH )) && log "  - install xfetch (latest release) -> $HOME/.local/bin/xfetch"
     (( DO_SCENES )) && log "  - copy equisdots/background scenes -> $(wallpaper_dir)"
     (( DO_SYSTEM_FONT )) && log "  - install Hack Nerd Font system-wide (/usr/share/fonts, sudo)"
     log "rofi/cava are deployed by niri/install.sh and dotsniri deploy"
@@ -262,6 +267,18 @@ install_xtop() {
     mkdir -p "$HOME/.config/xtop/themes"
 }
 
+install_xfetch() {
+    local script="$SCRIPT_DIR/install-xfetch.sh"
+    [[ -x "$script" ]] || { warn "install-xfetch.sh not found; skipping xfetch"; return 0; }
+    log "installing xfetch (latest release, checksum-verified)"
+    if bash "$script"; then
+        mkdir -p "$HOME/.config/xfetch"
+    else
+        warn "xfetch install failed (non-fatal; theme-sync will skip it)"
+    fi
+    return 0
+}
+
 install_scenes() {
     local dest bg scene name count=0
     dest="$(wallpaper_dir)"
@@ -323,10 +340,11 @@ install_nvim() {
 (( DO_SCENES )) && install_scenes
 (( DO_SCENES )) && install_wallpaper_pack
 (( DO_XTOP )) && install_xtop
+(( DO_XFETCH )) && install_xfetch
 (( DO_KITTY )) && install_kitty
 (( DO_STARSHIP )) && install_starship
 (( DO_NVIM )) && install_nvim
-if (( DO_KITTY || DO_STARSHIP || DO_XTOP )); then
+if (( DO_KITTY || DO_STARSHIP || DO_XTOP || DO_XFETCH )); then
     theme_sync_run
 fi
 log "app configs finished"

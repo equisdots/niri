@@ -66,6 +66,11 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
   package lists for the xtop build. `--no-xtop`, `--no-scenes`,
   `--no-wallpapers` and `--no-system-font` opt out; `DOTSNIRI_NO_*` env vars
   provide the same for automation.
+- `scripts/install-xfetch.sh` + `install-app-configs.sh`: install xfetch from
+  its latest GitHub release (same checksum-verified installer as the Hyprland
+  repo) into `~/.local/bin` and create `~/.config/xfetch` so theme-sync can
+  apply the palette. `--no-xfetch` / `DOTSNIRI_NO_XFETCH=1` skip it, and a
+  failed download/build never aborts the rest of the app-config step.
 - `config/apps/rofi/` and `config/apps/cava/`: the rofi/cava configs now live
   in the niri repo and are deployed by `install.sh` and `dotsniri deploy`, so a
   fresh niri install no longer depends on the `hyprland` repo for them.

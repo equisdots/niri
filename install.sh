@@ -7,7 +7,7 @@
 #   ./install.sh                 full install (packages + config + session files)
 #   ./install.sh --config-only   deploy ~/.config/niri and the user units only
 #   ./install.sh -y              assume "yes" for prompts
-#   ./install.sh --no-apps       skip kitty/starship/nvim/font app configs
+#   ./install.sh --no-apps       skip kitty/starship/nvim/xtop/xfetch/font app configs
 #   ./install.sh --help
 #
 # It is safe and idempotent: existing config is backed up once, files are
@@ -419,12 +419,12 @@ install_app_configs() {
     [[ "$APPS" == "1" ]] || { info "skipping app configs (--no-apps)"; return 0; }
     local script="$SCRIPT_DIR/scripts/install-app-configs.sh"
     if [[ ! -f "$script" ]]; then
-        warn "scripts/install-app-configs.sh not found; skipping kitty/starship/nvim/font"
+        warn "scripts/install-app-configs.sh not found; skipping kitty/starship/nvim/xtop/xfetch/font"
         return 0
     fi
     local args=()
     [[ "$ASSUME_YES" == "1" ]] && args+=("-y")
-    info "installing user app configs (kitty, starship, nvim, Hack Nerd Font)"
+    info "installing user app configs (kitty, starship, nvim, xtop, xfetch, Hack Nerd Font)"
     bash "$script" "${args[@]}" || warn "app config installer finished with warnings"
 }
 
