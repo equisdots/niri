@@ -11,6 +11,7 @@
 #   ./install-app-configs.sh -y              non-interactive (keep existing nvim)
 #   ./install-app-configs.sh --replace-nvim  replace an existing ~/.config/nvim
 #   ./install-app-configs.sh --no-kitty --no-starship --no-nvim --no-font
+#   ./install-app-configs.sh --no-xtop --no-scenes --no-system-font
 #   ./install-app-configs.sh --dry-run       print the plan, change nothing
 #
 # Rofi and cava configs are deployed by `niri/install.sh` and `dotsniri deploy`
@@ -27,6 +28,9 @@ DO_KITTY=1
 DO_STARSHIP=1
 DO_NVIM=1
 DO_FONT=1
+DO_XTOP=1
+DO_SCENES=1
+DO_SYSTEM_FONT=1
 REPLACE_NVIM=0
 
 log()  { printf '[apps] %s\n' "$*"; }
@@ -48,6 +52,10 @@ while [[ $# -gt 0 ]]; do
         --no-starship)  DO_STARSHIP=0 ;;
         --no-nvim)      DO_NVIM=0 ;;
         --no-font)      DO_FONT=0 ;;
+        --no-xtop)      DO_XTOP=0 ;;
+        --no-scenes)    DO_SCENES=0 ;;
+        --no-wallpapers) DO_SCENES=0 ;;
+        --no-system-font) DO_SYSTEM_FONT=0 ;;
         --replace-nvim) REPLACE_NVIM=1 ;;
         -h|--help)
             sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
@@ -58,12 +66,20 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+# Test/automation escape hatches (the niri-meta install inherits the env).
+[[ "${DOTSNIRI_NO_SYSTEM_FONT:-0}" == "1" ]] && DO_SYSTEM_FONT=0
+[[ "${DOTSNIRI_NO_XTOP:-0}" == "1" ]] && DO_XTOP=0
+[[ "${DOTSNIRI_NO_SCENES:-0}" == "1" ]] && DO_SCENES=0
+
 if (( DRY_RUN )); then
     log "dry-run plan:"
     (( DO_FONT )) && log "  - Hack Nerd Font -> $HOME/.local/share/fonts (user)"
     (( DO_KITTY )) && log "  - clone xscriptor-colors/terminal and run emulators/kitty/install.sh"
     (( DO_STARSHIP )) && log "  - clone xscriptor-colors/terminal and run prompts/starship/install.sh"
     (( DO_NVIM )) && log "  - clone xscriptor-colors/nvim -> $CONFIG_DIR/nvim (existing: $([[ -d "$CONFIG_DIR/nvim" ]] && echo keep || echo create))"
+    (( DO_XTOP )) && log "  - build/install xtop -> $HOME/.local/bin/xtop"
+    (( DO_SCENES )) && log "  - copy equisdots/background scenes -> $(wallpaper_dir)"
+    (( DO_SYSTEM_FONT )) && log "  - install Hack Nerd Font system-wide (/usr/share/fonts, sudo)"
     log "rofi/cava are deployed by niri/install.sh and dotsniri deploy"
     exit 0
 fi
@@ -75,6 +91,38 @@ theme_sync_run() {
         bash "$engine" || warn "theme sync failed (non-fatal)"
     else
         warn "theme-sync engine not installed yet; run 'dotsniri install' for palette sync"
+    fi
+}
+
+wallpaper_dir() {
+    local dir=""
+    if have jq && [[ -f "$HOME/.config/hypr/settings.json" ]]; then
+        dir="$(jq -r '.wallpaperDir // empty' "$HOME/.config/hypr/settings.json" 2>/dev/null || true)"
+    fi
+    dir="${dir:-$HOME/.config/hypr/wallpapers}"
+    printf '%s' "${dir/#\~/$HOME}"
+}
+
+install_font_system() {
+    local src="$HOME/.local/share/fonts/HackNerdFont-Regular.ttf"
+    local dst="/usr/share/fonts/HackNerdFont-Regular.ttf"
+    [[ -f "$src" ]] || return 0
+    if [[ -f "$dst" ]] && cmp -s "$src" "$dst" 2>/dev/null; then
+        log "Hack Nerd Font already installed system-wide"
+        return 0
+    fi
+    if [[ "$(id -u)" == "0" ]]; then
+        install -Dm644 "$src" "$dst" && fc-cache -f >/dev/null 2>&1 || true
+        log "Hack Nerd Font installed system-wide (SDDM/login)"
+    elif have sudo; then
+        if sudo install -Dm644 "$src" "$dst"; then
+            sudo fc-cache -f >/dev/null 2>&1 || true
+            log "Hack Nerd Font installed system-wide (SDDM/login)"
+        else
+            warn "could not install the font system-wide (sudo failed)"
+        fi
+    else
+        warn "no sudo: Hack Nerd Font stays user-only (SDDM may show boxes)"
     fi
 }
 
@@ -201,6 +249,56 @@ install_starship() {
     theme_sync_run
 }
 
+install_xtop() {
+    local script="$SCRIPT_DIR/install-xtop.sh"
+    if have xtop; then
+        mkdir -p "$HOME/.config/xtop"
+        log "xtop already installed: $(command -v xtop)"
+        return 0
+    fi
+    [[ -x "$script" ]] || { warn "install-xtop.sh not found; skipping xtop"; return 0; }
+    log "installing xtop (cargo build)"
+    bash "$script" || warn "xtop install failed (non-fatal; theme-sync will skip it)"
+}
+
+install_scenes() {
+    local dest bg scene name count=0
+    dest="$(wallpaper_dir)"
+    bg="${XDG_DATA_HOME:-$HOME/.local/share}/equisdots/background"
+    if [[ -d "$bg/scenes" ]]; then
+        mkdir -p "$dest"
+        for scene in "$bg/scenes"/*/; do
+            [[ -f "$scene/scene.js" ]] || continue
+            name="$(basename "$scene")"
+            rm -rf "$dest/$name"
+            cp -r "$scene" "$dest/$name"
+            count=$((count + 1))
+        done
+        log "installed $count interactive scene(s) into $dest"
+        return 0
+    fi
+    local script="$HOME/.config/hypr/scripts/scenes.sh"
+    if [[ -x "$script" ]]; then
+        log "background clone missing; using the shared scenes installer"
+        ASSUME_YES=1 bash "$script" --yes || warn "scenes install failed (non-fatal)"
+    else
+        warn "background scenes not found; run 'dotsniri install' or the shared scenes.sh"
+    fi
+}
+
+install_wallpaper_pack() {
+    local script="$HOME/.config/hypr/scripts/wallpapers.sh"
+    [[ -x "$script" ]] || { warn "wallpapers.sh not deployed; skipping the still-wallpaper pack"; return 0; }
+    if [[ -n "${WALLPAPERS_PACK:-}" ]]; then
+        ASSUME_YES="$ASSUME_YES" bash "$script" --pack "$WALLPAPERS_PACK" \
+            || warn "wallpaper pack install failed (non-fatal)"
+    elif (( ASSUME_YES )); then
+        log "wallpaper pack skipped (non-interactive; set WALLPAPERS_PACK=<tag> to download one)"
+    else
+        bash "$script" || warn "wallpaper pack step skipped/failed (non-fatal)"
+    fi
+}
+
 install_nvim() {
     local dest="$CONFIG_DIR/nvim"
     log "Installing Neovim config from xscriptor-colors/nvim"
@@ -220,7 +318,14 @@ install_nvim() {
 }
 
 (( DO_FONT )) && install_font
+(( DO_FONT && DO_SYSTEM_FONT )) && install_font_system
+(( DO_SCENES )) && install_scenes
+(( DO_SCENES )) && install_wallpaper_pack
+(( DO_XTOP )) && install_xtop
 (( DO_KITTY )) && install_kitty
 (( DO_STARSHIP )) && install_starship
 (( DO_NVIM )) && install_nvim
+if (( DO_KITTY || DO_STARSHIP || DO_XTOP )); then
+    theme_sync_run
+fi
 log "app configs finished"

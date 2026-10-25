@@ -17,6 +17,15 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
   themes/shaders/aliases from `xscriptor-colors/terminal`, starship, neovim,
   Hack Nerd Font, and the palette sync. `install.sh` runs it on a full install
   (`--no-apps` skips it) and `niri-meta` calls it on `install`.
+- `scripts/install-app-configs.sh`: install xtop (built from
+  `xtop-cli/xtop` with cargo) so theme-sync can theme it, copy the interactive
+  wallpaper scenes from the `background` clone into the davincix wallpaper
+  directory, optionally download a still-wallpaper pack
+  (`WALLPAPERS_PACK`/`wallpapers.sh`), and install Hack Nerd Font
+  **system-wide** (`/usr/share/fonts`) for SDDM/login. `rust`/`cargo` is in the
+  package lists for the xtop build. `--no-xtop`, `--no-scenes`,
+  `--no-wallpapers` and `--no-system-font` opt out; `DOTSNIRI_NO_*` env vars
+  provide the same for automation.
 - `config/apps/rofi/` and `config/apps/cava/`: the rofi/cava configs now live
   in the niri repo and are deployed by `install.sh` and `dotsniri deploy`, so a
   fresh niri install no longer depends on the `hyprland` repo for them.

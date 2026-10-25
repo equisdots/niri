@@ -92,7 +92,7 @@ CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-por
     kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
     network-manager-applet blueman gnome-keyring polkit-gnome qt6ct
     noto-fonts noto-fonts-emoji adw-gtk-theme papirus-icon-theme
-    fd ripgrep python imagemagick ffmpeg cava power-profiles-daemon)
+    fd ripgrep python imagemagick ffmpeg cava power-profiles-daemon rust)
 OPT_ARCH=(satty gpu-screen-recorder zbar envycontrol bibata-cursor-theme)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
@@ -101,7 +101,7 @@ CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
     network-manager-applet blueman gnome-keyring polkit-gnome qt6ct
     google-noto-sans-fonts google-noto-emoji-fonts adw-gtk3-theme papirus-icon-theme
-    fd-find ripgrep python3 ImageMagick ffmpeg-free cava power-profiles-daemon)
+    fd-find ripgrep python3 ImageMagick ffmpeg-free cava power-profiles-daemon cargo)
 OPT_FEDORA=(satty gpu-screen-recorder zbar envycontrol bibata-cursor-theme)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
@@ -110,7 +110,7 @@ CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
     network-manager-gnome blueman gnome-keyring policykit-1-gnome qt6ct
     fonts-noto-core fonts-noto-color-emoji papirus-icon-theme
-    fd-find ripgrep python3 imagemagick ffmpeg cava power-profiles-daemon)
+    fd-find ripgrep python3 imagemagick ffmpeg cava power-profiles-daemon cargo)
 OPT_DEBIAN=(satty gpu-screen-recorder-cli zbar-tools envycontrol bibata-cursor-theme adw-gtk3)
 # NOTE: `quickshell` is the equisdots shell/overlay. `grim`, `slurp` and
 # `wl-clipboard` provide the screenshot overlay and direct capture; `satty`
@@ -352,6 +352,31 @@ install_pam_lock() {
     fi
 }
 
+# SDDM uses the same Hack Nerd Font as the shell. Install it system-wide (the
+# app-config installer also installs it per-user); without this the greeter
+# shows boxes for the shutdown/reboot glyphs.
+install_font_system() {
+    local src="$HOME/.local/share/fonts/HackNerdFont-Regular.ttf"
+    local dst="/usr/share/fonts/HackNerdFont-Regular.ttf"
+    local url="https://raw.githubusercontent.com/xscriptor-colors/terminal/main/assets/fonts/HackNerdFont/HackNerdFont-Regular.ttf"
+    [[ -f "$dst" ]] && cmp -s "$src" "$dst" 2>/dev/null && { info "Hack Nerd Font already installed system-wide"; return 0; }
+    if [[ ! -f "$src" ]]; then
+        mkdir -p "$(dirname "$src")"
+        if have curl; then
+            curl -fsSL "$url" -o "$src" 2>/dev/null || true
+        elif have wget; then
+            wget -q -O "$src" "$url" 2>/dev/null || true
+        fi
+    fi
+    [[ -f "$src" ]] || { warn "Hack Nerd Font not available; SDDM may show boxes"; return 0; }
+    if sudo_cmd install -Dm644 "$src" "$dst"; then
+        sudo_cmd fc-cache -f >/dev/null 2>&1 || true
+        log "installed Hack Nerd Font system-wide (SDDM/login)"
+    else
+        warn "could not install Hack Nerd Font system-wide (SDDM may show boxes)"
+    fi
+}
+
 install_session_files() {
     if [[ "$CONFIG_ONLY" == "1" ]]; then
         info "config-only: skipping system session/portal files"
@@ -368,6 +393,7 @@ install_session_files() {
             warn "could not install session/portal files (sudo failed)"
         fi
         install_pam_lock
+        install_font_system
     else
         warn "no root/sudo: skipping system session/portal files"
         warn "copy manually: session/niri.desktop -> /usr/share/wayland-sessions/"
