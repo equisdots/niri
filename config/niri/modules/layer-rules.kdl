@@ -27,3 +27,11 @@
 //         saturation 1.1
 //     }
 // }
+
+// Put the wallpaper into the Overview backdrop and between workspaces.
+// Without this, niri keeps the background layer inside the workspace
+// rectangle while the rest of the Overview shows `backdrop-color`.
+layer-rule {
+    match namespace="^xwww-daemon$"
+    place-within-backdrop true
+}

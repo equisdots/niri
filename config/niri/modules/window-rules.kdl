@@ -168,17 +168,7 @@ window-rule {
 // Hyprland used numeric workspaces 2/3/4/5/6; the named workspaces from
 // modules/workspaces.kdl carry the same roles.
 window-rule {
-    match app-id="^(firefox)$"
-    open-on-workspace "browser"
-}
-
-window-rule {
-    match app-id="^(chromium)$"
-    open-on-workspace "browser"
-}
-
-window-rule {
-    match app-id="^(google-chrome)$"
+    match app-id="^(firefox|chromium|google-chrome|brave-browser|brave-browser-beta|librewolf|zen|zen-browser|vivaldi|microsoft-edge|floorp|qutebrowser)$"
     open-on-workspace "browser"
 }
 
