@@ -81,7 +81,9 @@ layout {
         corner-radius 8
     }
 
-    // Backdrop drawn where no window or wallpaper layer is present. Matches
-    // the Hyprland color0 background from config/hypr/colors.lua.
-    background-color "#363537"
+    // Backdrop drawn where no window or wallpaper layer is present.
+    // Transparent is required with the xwww `place-within-backdrop` rule:
+    // otherwise this opaque workspace color covers the backdrop wallpaper on
+    // the normal screen (the wallpaper was only visible in the Overview).
+    background-color "transparent"
 }
