@@ -13,6 +13,16 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
 
 ### Added
 
+- `scripts/niri_wallpaper.sh` + `Super+W`: the wallpaper picker no longer
+  depends on the shared `qs_manager.sh`; the niri wrapper runs
+  `davincix thumbs`, starts Quickshell if needed and toggles the picker over
+  IPC. `scripts/niri_wallpaper_doctor.sh` prints the resolved wallpaper dir,
+  scene/media counts, davincix/kernel/thumbs/font tools for field debugging.
+- `install-app-configs.sh` creates `~/.config/xtop/themes` when xtop is
+  already installed, so theme-sync's xtop target is available and applies the
+  palette (it previously skipped because the themes directory did not exist).
+- `install.sh`: the generated `WALLPAPER_DIR` now follows
+  `settings.json.wallpaperDir` (expanded), matching the shell and the picker.
 - Standalone app config installer (`scripts/install-app-configs.sh`): kitty
   themes/shaders/aliases from `xscriptor-colors/terminal`, starship, neovim,
   Hack Nerd Font, and the palette sync. `install.sh` runs it on a full install

@@ -252,13 +252,14 @@ install_starship() {
 install_xtop() {
     local script="$SCRIPT_DIR/install-xtop.sh"
     if have xtop; then
-        mkdir -p "$HOME/.config/xtop"
+        mkdir -p "$HOME/.config/xtop/themes"
         log "xtop already installed: $(command -v xtop)"
         return 0
     fi
     [[ -x "$script" ]] || { warn "install-xtop.sh not found; skipping xtop"; return 0; }
     log "installing xtop (cargo build)"
     bash "$script" || warn "xtop install failed (non-fatal; theme-sync will skip it)"
+    mkdir -p "$HOME/.config/xtop/themes"
 }
 
 install_scenes() {
