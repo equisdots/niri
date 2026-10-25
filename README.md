@@ -344,8 +344,8 @@ valid alternative rather than dropped silently.
   icons, `fd`, `ripgrep`, ImageMagick, `librsvg`, ffmpeg, `cava`,
   `power-profiles-daemon`, `lm_sensors`, `iw`, `xdg-utils`, `inotify-tools`,
   `socat`, `satty`, `zbar` and `gpu-screen-recorder`. AUR-only extras
-  installed through the helper when available: `mpvpaper` (video wallpapers),
-  `envycontrol` and Bibata cursors.
+  installed through the helper: `mpvpaper` (video wallpapers) and Bibata
+  cursors; `envycontrol` is installed by niri-meta's NVIDIA step.
 - `qt6-multimedia` is **required**, not optional: `DavincixPicker.qml` and
   `DavincixCard.qml` import `QtMultimedia`, and without the QML module the
   wallpaper picker fails to load (`module "QtMultimedia" is not installed`).

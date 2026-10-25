@@ -101,7 +101,7 @@ CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-por
     xdg-utils xdg-user-dirs
     zsh starship
     git rsync curl wget tar unzip base-devel)
-OPT_ARCH=(mpvpaper envycontrol bibata-cursor-theme)
+OPT_ARCH=(mpvpaper bibata-cursor-theme)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp zbar wl-clipboard cliphist libnotify
@@ -118,7 +118,7 @@ CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-utils xdg-user-dirs
     starship zsh
     git rsync curl wget tar unzip)
-OPT_FEDORA=(satty gpu-screen-recorder mpvpaper rofi-emoji envycontrol bibata-cursor-theme)
+OPT_FEDORA=(satty gpu-screen-recorder mpvpaper rofi-emoji bibata-cursor-theme)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-desktop-portal-gtk swayidle jq grim slurp zbar-tools wl-clipboard cliphist libnotify-bin
@@ -134,7 +134,7 @@ CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
     xdg-utils xdg-user-dirs
     zsh
     git rsync curl wget tar unzip)
-OPT_DEBIAN=(satty gpu-screen-recorder-cli mpvpaper rofi-emoji starship envycontrol bibata-cursor-theme adw-gtk3)
+OPT_DEBIAN=(satty gpu-screen-recorder-cli mpvpaper rofi-emoji starship bibata-cursor-theme adw-gtk3)
 # NOTE: `quickshell` is the equisdots shell/overlay. `grim`, `slurp` and
 # `wl-clipboard` provide the screenshot overlay and direct capture; `satty`
 # annotates, `zbar` (zbarimg on Arch/Fedora, zbar-tools on Debian) scans QR
@@ -234,46 +234,50 @@ install_packages() {
     info "installing packages with $PKG (niri, portals, shell runtime, capture tools)"
     case "$PKG" in
         pacman)
-            local p
-            if ! sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}"; then
-                warn "core package transaction failed; retrying each package individually"
-                for p in "${CORE_ARCH[@]}"; do
-                    sudo_cmd pacman -S --needed --noconfirm "$p" 2>/dev/null \
-                        || warn "core package skipped: $p"
-                done
+            info "preflight: resolving ${#CORE_ARCH[@]} core packages"
+            if ! sudo_cmd pacman -Sp --needed "${CORE_ARCH[@]}" >/dev/null; then
+                warn "package resolution failed; nothing was installed"
+                return 1
             fi
-            if ensure_aur_helper; then
-                for p in "${OPT_ARCH[@]}"; do
-                    "$AUR_HELPER" -S --needed --noconfirm "$p" 2>/dev/null \
-                        || warn "optional package skipped: $p"
-                done
-            else
-                warn "AUR helper unavailable; trying the optional packages from the official repos"
-                for p in "${OPT_ARCH[@]}"; do
-                    sudo_cmd pacman -S --needed --noconfirm "$p" 2>/dev/null \
-                        || warn "optional package skipped: $p"
-                done
+            if ! sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}"; then
+                warn "core package transaction failed; nothing was installed"
+                return 1
+            fi
+            if ! ensure_aur_helper; then
+                warn "no AUR helper for required AUR packages: ${OPT_ARCH[*]}"
+                return 1
+            fi
+            if ! "$AUR_HELPER" -S --needed --noconfirm "${OPT_ARCH[@]}"; then
+                warn "AUR transaction failed; retrying once"
+                if ! "$AUR_HELPER" -S --needed --noconfirm "${OPT_ARCH[@]}"; then
+                    warn "AUR package transaction failed: ${OPT_ARCH[*]}"
+                    return 1
+                fi
             fi
             ;;
         dnf)
-            sudo_cmd dnf install -y "${CORE_FEDORA[@]}" \
-                || warn "some packages failed; niri may need a COPR (see https://yalter.github.io/niri)"
-            local p
-            for p in "${OPT_FEDORA[@]}"; do
-                sudo_cmd dnf install -y "$p" 2>/dev/null \
-                    || warn "optional package skipped: $p"
-            done
+            if ! sudo_cmd dnf install -y "${CORE_FEDORA[@]}"; then
+                warn "core package transaction failed; niri may need a COPR (see https://yalter.github.io/niri)"
+                return 1
+            fi
+            if ! sudo_cmd dnf install -y "${OPT_FEDORA[@]}"; then
+                warn "optional package transaction failed: ${OPT_FEDORA[*]}"
+                return 1
+            fi
             ;;
         apt)
             sudo_cmd apt-get update
-            sudo_cmd apt-get install -y "${CORE_DEBIAN[@]}" || warn "some packages failed to install"
-            local p
-            for p in "${OPT_DEBIAN[@]}"; do
-                sudo_cmd apt-get install -y "$p" 2>/dev/null \
-                    || warn "optional package skipped: $p"
-            done
+            if ! sudo_cmd apt-get install -y "${CORE_DEBIAN[@]}"; then
+                warn "core package transaction failed"
+                return 1
+            fi
+            if ! sudo_cmd apt-get install -y "${OPT_DEBIAN[@]}"; then
+                warn "optional package transaction failed: ${OPT_DEBIAN[*]}"
+                return 1
+            fi
             ;;
     esac
+    return 0
 }
 
 # --- Config deployment ------------------------------------------------------

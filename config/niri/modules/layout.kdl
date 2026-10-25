@@ -25,12 +25,16 @@ layout {
     // open, so the closest neutral behavior is not to center on focus.
     center-focused-column "never"
 
-    default-column-width { proportion 0.5; }
+    // Open new windows at full output width, matching the wide-window
+    // behavior users expect from the shared niri configs. Existing windows are
+    // never resized; use switch-preset-column-width to cycle.
+    default-column-width { proportion 1.0; }
 
     preset-column-widths {
-        proportion 0.33333
-        proportion 0.5
+        proportion 1.0
         proportion 0.66667
+        proportion 0.5
+        proportion 0.33333
     }
 
     // Hyprland: border_size = 2 with active/inactive borders drawn around every

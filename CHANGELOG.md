@@ -23,6 +23,16 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
   palette (it previously skipped because the themes directory did not exist).
 - `install.sh`: the generated `WALLPAPER_DIR` now follows
   `settings.json.wallpaperDir` (expanded), matching the shell and the picker.
+- `config/niri/modules/layer-rules.kdl`: `place-within-backdrop true` for the
+  `xwww-daemon` layer, so the wallpaper fills the Overview backdrop and the
+  space between workspaces instead of staying inside a workspace rectangle.
+- `config/niri/modules/layout.kdl`: new windows open at `proportion 1.0`
+  (full output width) and `1.0` is in `preset-column-widths`, matching the
+  wide-window behavior of the shared niri configs. Existing windows are not
+  resized.
+- `config/niri/modules/window-rules.kdl`: the browser workspace rule now
+  covers `brave-browser`, LibreWolf, Zen, Vivaldi, Edge, Floorp and qutebrowser
+  in addition to Firefox/Chromium/Chrome.
 - `install.sh`: package parity with the Hyprland installer. Core now includes
   `qt6-multimedia` (required by the davincix wallpaper picker/video previews),
   `inotify-tools` (live settings/widget watchers), `socat` (nyx IPC), PipeWire
@@ -30,8 +40,9 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
   `lm_sensors`, `iw`, `librsvg`, CJK fonts, `rofi-emoji`, `xdg-utils`,
   `starship`/`zsh` and the base build tools (`git`, `base-devel`, `rsync`,
   `curl`, `wget`, `tar`, `unzip`). On Arch it ensures an AUR helper
-  (paru/yay, or builds yay) for AUR-only extras (`mpvpaper`, `envycontrol`,
-  Bibata cursors) and warns when the QtMultimedia QML module is still missing.
+  (paru/yay, or builds yay) for AUR-only extras (`mpvpaper` and Bibata
+  cursors; `envycontrol` is installed by niri-meta's NVIDIA step) and warns
+  when the QtMultimedia QML module is still missing.
   If the core pacman transaction fails, every core package is retried
   individually so an unknown/missing package cannot block `qt6-multimedia` and
   the rest of the essentials.
