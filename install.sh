@@ -87,46 +87,80 @@ detect_distro() {
 
 # --- Package installation ---------------------------------------------------
 CORE_ARCH=(niri xwayland-satellite quickshell xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify
-    pipewire wireplumber
-    kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
-    network-manager-applet blueman gnome-keyring polkit-gnome qt6ct
-    noto-fonts noto-fonts-emoji adw-gtk-theme papirus-icon-theme
-    fd ripgrep python imagemagick ffmpeg cava power-profiles-daemon rust)
-OPT_ARCH=(satty gpu-screen-recorder zbar envycontrol bibata-cursor-theme)
+    xdg-desktop-portal-gtk swayidle jq grim slurp satty zbar wl-clipboard cliphist libnotify
+    gpu-screen-recorder mpvpaper
+    pipewire pipewire-alsa pipewire-pulse wireplumber
+    networkmanager bluez bluez-utils
+    kitty rofi rofi-emoji playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
+    network-manager-applet blueman gnome-keyring libsecret polkit-gnome
+    qt5-wayland qt6-wayland qt5ct qt6ct qt6-multimedia
+    gvfs gvfs-mtp
+    noto-fonts noto-fonts-emoji noto-fonts-cjk adw-gtk-theme papirus-icon-theme
+    fd ripgrep python imagemagick librsvg ffmpeg cava power-profiles-daemon rust
+    inotify-tools socat lm_sensors iw
+    xdg-utils xdg-user-dirs
+    zsh starship
+    git rsync curl wget tar unzip base-devel)
+OPT_ARCH=(envycontrol bibata-cursor-theme)
 
 CORE_FEDORA=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify
-    pipewire wireplumber
+    xdg-desktop-portal-gtk swayidle jq grim slurp zbar wl-clipboard cliphist libnotify
+    pipewire pipewire-alsa pipewire-pulseaudio wireplumber
+    NetworkManager bluez
     kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
-    network-manager-applet blueman gnome-keyring polkit-gnome qt6ct
-    google-noto-sans-fonts google-noto-emoji-fonts adw-gtk3-theme papirus-icon-theme
-    fd-find ripgrep python3 ImageMagick ffmpeg-free cava power-profiles-daemon cargo)
-OPT_FEDORA=(satty gpu-screen-recorder zbar envycontrol bibata-cursor-theme)
+    network-manager-applet blueman gnome-keyring libsecret polkit-gnome
+    qt5ct qt6ct qt5-qtwayland qt6-qtwayland qt6-qtmultimedia
+    gvfs gvfs-mtp
+    google-noto-sans-fonts google-noto-emoji-fonts google-noto-sans-cjk-fonts
+    adw-gtk3-theme papirus-icon-theme
+    fd-find ripgrep python3 ImageMagick librsvg2 ffmpeg-free cava power-profiles-daemon cargo
+    inotify-tools socat lm_sensors iw
+    xdg-utils xdg-user-dirs
+    starship zsh
+    git rsync curl wget tar unzip)
+OPT_FEDORA=(satty gpu-screen-recorder mpvpaper rofi-emoji envycontrol bibata-cursor-theme)
 
 CORE_DEBIAN=(niri xwayland-satellite xdg-desktop-portal xdg-desktop-portal-gnome
-    xdg-desktop-portal-gtk swayidle jq grim slurp wl-clipboard cliphist libnotify-bin
-    pipewire wireplumber
+    xdg-desktop-portal-gtk swayidle jq grim slurp zbar-tools wl-clipboard cliphist libnotify-bin
+    pipewire pipewire-alsa pipewire-pulse wireplumber
+    network-manager bluez
     kitty rofi playerctl brightnessctl pamixer ddcutil nautilus pavucontrol
-    network-manager-gnome blueman gnome-keyring policykit-1-gnome qt6ct
-    fonts-noto-core fonts-noto-color-emoji papirus-icon-theme
-    fd-find ripgrep python3 imagemagick ffmpeg cava power-profiles-daemon cargo)
-OPT_DEBIAN=(satty gpu-screen-recorder-cli zbar-tools envycontrol bibata-cursor-theme adw-gtk3)
+    network-manager-gnome blueman gnome-keyring libsecret-1-0 policykit-1-gnome
+    qt5ct qt6ct qt5-wayland qt6-wayland qml6-module-qtmultimedia
+    gvfs gvfs-backends
+    fonts-noto-core fonts-noto-color-emoji fonts-noto-cjk papirus-icon-theme
+    fd-find ripgrep python3 imagemagick librsvg2-common ffmpeg cava power-profiles-daemon cargo
+    inotify-tools socat lm-sensors iw
+    xdg-utils xdg-user-dirs
+    zsh
+    git rsync curl wget tar unzip)
+OPT_DEBIAN=(satty gpu-screen-recorder-cli mpvpaper rofi-emoji starship envycontrol bibata-cursor-theme adw-gtk3)
 # NOTE: `quickshell` is the equisdots shell/overlay. `grim`, `slurp` and
 # `wl-clipboard` provide the screenshot overlay and direct capture; `satty`
 # annotates, `zbar` (zbarimg on Arch/Fedora, zbar-tools on Debian) scans QR
 # codes, and `gpu-screen-recorder` is the SAME screen recorder Hyprland uses
 # (driven by niri/scripts/niri_record.sh; compositor-agnostic, wlr-screencopy).
+# `mpvpaper` applies video wallpapers through davincix.
+#
+# `qt6-multimedia` is not optional: DavincixPicker.qml and DavincixCard.qml
+# import QtMultimedia, so without the QML module the whole wallpaper picker
+# fails to load (StackView replace: module "QtMultimedia" is not installed).
+# `inotify-tools` drives the live settings/widget watchers and `socat` feeds
+# the nyx mascot overlay.
 #
 # The rest of CORE is the user-facing tool set the keybinds and bar expect:
 # kitty (terminal), rofi (emoji picker), playerctl (media keys), brightnessctl,
 # pamixer, ddcutil, nautilus, pavucontrol, nm-applet, blueman, gnome-keyring,
-# the polkit agent, qt6ct, Noto fonts, adw-gtk3 and Papirus icons, fd/ripgrep,
-# python, ImageMagick, ffmpeg, cava and power-profiles-daemon.
-# Distro names differ: adw-gtk3 ships as `adw-gtk-theme` on Arch and
-# `adw-gtk3-theme` on Fedora; fd is `fd-find` on Fedora/Debian; the polkit
-# agent is `policykit-1-gnome` on Debian; gpu-screen-recorder is provided by
-# `gpu-screen-recorder-cli` on Debian.
+# the polkit agent, qt5ct/qt6ct, Qt5/Qt6 Wayland, Noto fonts, adw-gtk3 and
+# Papirus icons, fd/ripgrep, python, ImageMagick, ffmpeg, cava and
+# power-profiles-daemon. Distro names differ: adw-gtk3 ships as
+# `adw-gtk-theme` on Arch and `adw-gtk3-theme` on Fedora; fd is `fd-find` on
+# Fedora/Debian; the polkit agent is `policykit-1-gnome` on Debian;
+# gpu-screen-recorder is provided by `gpu-screen-recorder-cli` on Debian.
+#
+# On Arch, `install.sh` ensures an AUR helper (paru, yay, or a fresh yay build
+# with git + base-devel) exactly like the Hyprland installer, so AUR-only
+# optional packages can be installed instead of silently skipped.
 #
 # OPTIONAL packages may live in the AUR / a COPR / a PPA or simply not be
 # packaged for a distro. They are installed one by one, so a missing name only
@@ -144,19 +178,74 @@ sudo_cmd() {
     fi
 }
 
+# AUR helper parity with equisdots/hyprland: prefer paru, then yay, and build
+# yay from the AUR when neither exists. yay must run as the desktop user, so a
+# root invocation only warns and falls back to the official repositories.
+AUR_HELPER=""
+ensure_aur_helper() {
+    if [[ "$(id -u)" == "0" ]]; then
+        warn "running as root: AUR helpers cannot run as root; AUR packages will be skipped"
+        return 1
+    fi
+    if have paru; then
+        AUR_HELPER="paru"; info "AUR helper: paru"
+        return 0
+    fi
+    if have yay; then
+        AUR_HELPER="yay"; info "AUR helper: yay"
+        return 0
+    fi
+
+    if ! have git || ! have makepkg; then
+        info "installing yay build tools (git, base-devel)"
+        sudo_cmd pacman -S --needed --noconfirm git base-devel || return 1
+    fi
+
+    local tmp
+    tmp="$(mktemp -d)" || return 1
+    info "no AUR helper found; building yay from the AUR"
+    if ! git clone --depth 1 https://aur.archlinux.org/yay.git "$tmp/yay" >/dev/null 2>&1; then
+        warn "could not clone yay; AUR-only packages will be skipped"
+        rm -rf "$tmp"
+        return 1
+    fi
+    if ( cd "$tmp/yay" && makepkg -si --noconfirm ); then
+        if have yay; then
+            AUR_HELPER="yay"
+            info "AUR helper installed: yay"
+        else
+            warn "yay build finished but the binary is not on PATH"
+            AUR_HELPER=""
+        fi
+    else
+        warn "yay build failed; AUR-only packages will be skipped"
+        AUR_HELPER=""
+    fi
+    rm -rf "$tmp"
+    [[ -n "$AUR_HELPER" ]]
+}
+
 install_packages() {
     [[ "$PKG" == "unknown" ]] && { warn "unknown distro; install packages manually"; return 0; }
 
-    info "installing packages with $PKG (niri, portals, swayidle, capture tools)"
+    info "installing packages with $PKG (niri, portals, shell runtime, capture tools)"
     case "$PKG" in
         pacman)
             sudo_cmd pacman -S --needed --noconfirm "${CORE_ARCH[@]}" \
-                || warn "core packages failed; install niri manually: sudo pacman -S niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk"
+                || warn "core packages failed; install niri manually: sudo pacman -S niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk qt6-multimedia"
             local p
-            for p in "${OPT_ARCH[@]}"; do
-                sudo_cmd pacman -S --needed --noconfirm "$p" 2>/dev/null \
-                    || warn "optional package skipped: $p"
-            done
+            if ensure_aur_helper; then
+                for p in "${OPT_ARCH[@]}"; do
+                    "$AUR_HELPER" -S --needed --noconfirm "$p" 2>/dev/null \
+                        || warn "optional package skipped: $p"
+                done
+            else
+                warn "AUR helper unavailable; trying the optional packages from the official repos"
+                for p in "${OPT_ARCH[@]}"; do
+                    sudo_cmd pacman -S --needed --noconfirm "$p" 2>/dev/null \
+                        || warn "optional package skipped: $p"
+                done
+            fi
             ;;
         dnf)
             sudo_cmd dnf install -y "${CORE_FEDORA[@]}" \
@@ -472,6 +561,35 @@ check_shared_payload() {
         || warn "Quickshell payload missing at $dir/quickshell (provided by niri-meta)."
 }
 
+# The wallpaper picker (DavincixPicker.qml) and the video previews
+# (DavincixCard.qml) import QtMultimedia. When the QML module is missing the
+# whole picker fails to instantiate and Super+W appears to do nothing.
+qt_multimedia_present() {
+    local root
+    for root in \
+        "$(qmake6 -query QT_INSTALL_QML 2>/dev/null || true)" \
+        /usr/lib/qt6/qml \
+        /usr/lib64/qt6/qml \
+        /usr/lib/x86_64-linux-gnu/qt6/qml \
+        /usr/lib/aarch64-linux-gnu/qt6/qml; do
+        [[ -n "$root" && -d "$root/QtMultimedia" ]] && return 0
+    done
+    return 1
+}
+
+check_runtime_deps() {
+    if qt_multimedia_present; then
+        info "QtMultimedia QML module found (wallpaper picker and video previews)"
+        return 0
+    fi
+    warn "QtMultimedia QML module is missing: the wallpaper picker will not load"
+    case "$PKG" in
+        pacman) warn "  install it with: sudo pacman -S qt6-multimedia" ;;
+        dnf)    warn "  install it with: sudo dnf install qt6-qtmultimedia" ;;
+        apt)    warn "  install it with: sudo apt install qml6-module-qtmultimedia" ;;
+    esac
+}
+
 # --- Main -------------------------------------------------------------------
 main() {
     echo "equisdots niri installer"
@@ -499,6 +617,7 @@ main() {
         install_app_configs
     fi
     check_shared_payload
+    check_runtime_deps
 
     echo
     log "done."
