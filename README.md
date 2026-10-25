@@ -336,12 +336,22 @@ valid alternative rather than dropped silently.
 - For capture/annotation: `grim`, `slurp`, `satty`, `wl-clipboard`, `zbar`
   (Debian `zbar-tools`) and `gpu-screen-recorder` (Debian
   `gpu-screen-recorder-cli`) for recording.
-- User-facing tools installed by `install.sh`: `kitty`, `rofi`, `playerctl`,
-  `brightnessctl`, `pamixer`, `ddcutil`, `nautilus`, `pavucontrol`,
-  NetworkManager applet, `blueman`, `gnome-keyring`, a polkit agent, `qt6ct`,
-  Noto fonts, adw-gtk3, Papirus icons, `fd`, `ripgrep`, ImageMagick, ffmpeg,
-  `cava` and `power-profiles-daemon`. Optional: `satty`,
-  `gpu-screen-recorder`, `zbar`, `envycontrol`, Bibata cursors.
+- User-facing tools installed by `install.sh`: `kitty`, `rofi`, `rofi-emoji`,
+  `playerctl`, `brightnessctl`, `pamixer`, `ddcutil`, `nautilus`,
+  `pavucontrol`, NetworkManager applet, `blueman`, `gnome-keyring`, `libsecret`,
+  a polkit agent, `qt5ct`/`qt6ct`, Qt5/Qt6 Wayland, PipeWire ALSA/pulse,
+  NetworkManager/BlueZ, GVfs, Noto fonts (including CJK), adw-gtk3, Papirus
+  icons, `fd`, `ripgrep`, ImageMagick, `librsvg`, ffmpeg, `cava`,
+  `power-profiles-daemon`, `lm_sensors`, `iw`, `xdg-utils`, `inotify-tools`,
+  `socat`, `mpvpaper` (video wallpapers), `satty`, `zbar` and
+  `gpu-screen-recorder`. Optional AUR extras: `envycontrol` and Bibata cursors.
+- `qt6-multimedia` is **required**, not optional: `DavincixPicker.qml` and
+  `DavincixCard.qml` import `QtMultimedia`, and without the QML module the
+  wallpaper picker fails to load (`module "QtMultimedia" is not installed`).
+- On Arch, `install.sh` ensures an AUR helper exactly like the Hyprland
+  installer: it prefers `paru`, then `yay`, and builds `yay` from the AUR with
+  `git` + `base-devel` when neither is present, so AUR-only extras are not
+  silently skipped. Other distros keep those extras optional.
 - For the plugin set: `cliphist` (clipboard), `fd` (file search) and `jq`
   (scan/registry) in addition to the shell's own dependencies. On Debian/Ubuntu
   the `fd-find` package installs `fdfind`, not `fd`.
