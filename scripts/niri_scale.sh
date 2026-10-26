@@ -14,8 +14,10 @@
 #   niri_scale.sh up NAME        operate on a named output instead of focused
 #   niri_scale.sh --help
 #
-# Runtime changes are temporary; `niri_monitor_manager.sh save` persists the
-# live state to generated/outputs.kdl.
+# Runtime changes are temporary, so every explicit scale is snapshotted into
+# generated/outputs.kdl with `niri_monitor_manager.sh save`; without it a
+# restart reloads the previous scale (or niri's auto scale) and the change is
+# lost. `auto` is intentionally left unpersisted.
 # ============================================================================
 
 set -euo pipefail
@@ -24,13 +26,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 . "$SCRIPT_DIR/lib/common.sh"
 
-LADDER="0.8 1.0 1.25 1.5 2.0"
+# 0.75 and 0.7 are the low-end rungs (0.7 rounds logical pixels, so niri may
+# render slightly soft there); 0.8 and above divide 1920x1080 into whole pixels.
+LADDER="0.7 0.75 0.8 1.0 1.25 1.5 2.0"
 
 usage() {
     cat <<'EOF'
 Usage: niri_scale.sh up|down|auto|<scale> [output]
 
-  up|down    step the focused (or named) output along 0.8 1.0 1.25 1.5 2.0
+  up|down    step the focused (or named) output along 0.7 0.75 0.8 1.0 1.25 1.5 2.0
   auto       niri picks the scale
   1.5        explicit scale
 EOF
@@ -97,6 +101,20 @@ if [[ "$scale" != "auto" && -f "$EQUISDOTS_SETTINGS" ]]; then
         mv -f "$tmp" "$EQUISDOTS_SETTINGS"
     else
         rm -f "$tmp"
+    fi
+fi
+
+# Runtime `niri msg output` changes do not survive a restart. Snapshot the live
+# output state (mode/scale/position/transform/vrr) into generated/outputs.kdl so
+# the next session loads the same scale. Explicit scales only: `auto` should stay
+# free to adapt on every boot.
+if [[ "$scale" != "auto" ]]; then
+    save_script="$SCRIPT_DIR/niri_monitor_manager.sh"
+    if [[ -f "$save_script" ]]; then
+        bash "$save_script" save >/dev/null 2>&1 \
+            || warn "could not persist the new scale to $NIRI_GENERATED_DIR/outputs.kdl"
+    else
+        warn "missing $save_script; the new scale will not survive a restart"
     fi
 fi
 

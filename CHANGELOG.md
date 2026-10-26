@@ -156,6 +156,12 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
 
 ### Changed
 
+- `scripts/niri_scale.sh`: the `Super+Shift+Z` / `Super+Ctrl+Z` ladder now has
+  two extra low-end rungs, 75% and 70% (`0.7 0.75 0.8 1.0 1.25 1.5 2.0`), and
+  every explicit scale is persisted to `generated/outputs.kdl` through
+  `niri_monitor_manager.sh save`. Runtime `niri msg output … scale` changes are
+  temporary, so before this the selected scale reverted on the next session.
+  `auto` stays unpersisted so niri can keep adapting it.
 - `layout.kdl`: the default border colours are a neutral grey instead of the
   loud palette accent; the shell refines them at runtime from the palette's
   muted colour (`color8`) through `generated/borders.kdl`.

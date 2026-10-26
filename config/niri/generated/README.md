@@ -17,7 +17,7 @@ from its own source of truth, so partial edits do not survive.
 | `borders.kdl` | shell backend (`Compositor.setWindowBorders`, `core/compositors/Niri.qml`) | `layout { border { on; active-color ... inactive-color ... }; focus-ring { off } }`, the live palette border colours. |
 | `theme-colors.kdl` | `scripts/niri_write_borders.sh` (called by the shell backend) | `layout { border { active-color ... inactive-color ... } }`, deep-merged over `modules/layout.kdl`. |
 | `theme-effects.kdl` | `scripts/niri_effects.sh` | Generated `layout { gaps; struts; border { width }; shadow { ... } }` (no `blur`: that section has its own file). |
-| `outputs.kdl` | `scripts/niri_monitor_apply.sh` (save) / `scripts/niri_monitor_manager.sh save` | One `output "make model serial" { mode; scale; position; transform; variable-refresh-rate; off }` block per saved monitor. |
+| `outputs.kdl` | `scripts/niri_monitor_apply.sh` (save) / `scripts/niri_monitor_manager.sh save` / `scripts/niri_scale.sh` (after every explicit scale) | One `output "make model serial" { mode; scale; position; transform; variable-refresh-rate; off }` block per saved monitor. |
 | `user-binds.kdl` | shell Config.qml under niri (Niri backend) | `binds { ... }` generated from `settings.json`. |
 | `user-startup.kdl` | shell Config.qml under niri (Niri backend) | Extra `spawn-at-startup` / `spawn-sh-at-startup` entries. |
 
