@@ -202,8 +202,8 @@ done
 [[ -n "$QML" ]] || die "ScreenshotOverlay.qml not found; run 'dotsniri install' first"
 
 # Toggle: a second press closes a running overlay.
-if pgrep -f "quickshell -p $QML" >/dev/null 2>&1; then
-    pkill -f "quickshell -p $QML"
+if pgrep -f -- "-p $QML" >/dev/null 2>&1; then
+    pkill -f -- "-p $QML"
     exit 0
 fi
 
