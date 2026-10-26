@@ -57,6 +57,7 @@ backend) and must be **valid multi-line KDL**:
 - `theme-colors.kdl` — `scripts/niri_write_borders.sh`
 - `theme-effects.kdl` — `scripts/niri_effects.sh` (`layout` knobs only)
 - `outputs.kdl` — `scripts/niri_monitor_apply.sh` / `niri_monitor_manager.sh save`
+  / `scripts/niri_scale.sh` after an explicit scale change
 - `user-binds.kdl`, `user-startup.kdl` — the shell
 
 They are atomically replaced (write to a temp file, then `mv`), and a partial
