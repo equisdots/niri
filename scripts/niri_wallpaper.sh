@@ -35,7 +35,7 @@ fi
 
 # qs_manager.sh used to start the shell when it was not running; keep that
 # behavior so the first Super+W after login always works.
-if ! pgrep -f "$QS_BIN -p $QML" >/dev/null 2>&1; then
+if ! pgrep -f -- "-p $QML" >/dev/null 2>&1; then
     setsid "$QS_BIN" -p "$QML" >/dev/null 2>&1 &
     sleep 1
 fi
