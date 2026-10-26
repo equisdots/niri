@@ -188,21 +188,31 @@ cmd_save() {
             | ($r | floor) as $i
             | (((($r - $i) * 1000) | round)) as $f
             | "\($i).\($f | tostring | if length == 1 then "00" + . elif length == 2 then "0" + . else . end)";
+        def transform_kdl:
+            if . == null or . == "" or . == "Normal" or . == "normal" then ""
+            elif . == "Flipped" then "flipped"
+            elif . == "Flipped90" then "flipped-90"
+            elif . == "Flipped180" then "flipped-180"
+            elif . == "Flipped270" then "flipped-270"
+            elif . == "90" or . == "180" or . == "270" then .
+            else . end;
         to_entries[]
         | .key as $name
         | .value as $o
         | ($o.modes[$o.current_mode] // null) as $m
         | ($o.logical // null) as $l
-        | (($o.make // "") + " " + ($o.model // "") + " " + ($o.serial // "")) as $ident
+        | (($o.make // "") + " " + ($o.model // "") + " " + (($o.serial // "") | tostring)) as $ident
         | ($ident | gsub(" +"; " ") | sub("^ "; "") | sub(" $"; "")) as $clean
-        | (if ($clean | length) > 0 then $clean else $name end) as $id
+        | (($o.serial | tostring) as $serial
+           | if $serial != "" and $serial != "null" and $serial != "0" and ($clean | length) > 0
+             then $clean else $name end) as $id
         | "output \"\($id)\" {"
         , (if $l == null then "    off"
            else (
              (if $m == null then "" else "    mode \"\($m.width)x\($m.height)@\($m.refresh_rate | hz3)\"\n" end)
              + "    scale \($l.scale)\n"
              + "    position x=\($l.x) y=\($l.y)\n"
-             + (if $l.transform != "normal" then "    transform \"\($l.transform)\"\n" else "" end)
+             + (($l.transform | transform_kdl) as $t | if $t == "" then "" else "    transform \"\($t)\"\n" end)
              + (if ($o.vrr_enabled // false) then "    variable-refresh-rate\n" else "" end)
            )
            end)
