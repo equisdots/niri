@@ -16,18 +16,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/caching.sh"
 qs_ensure_cache "wallpaper_picker"
 
-KERNEL_DIR="${DAVINCI_KERNEL_DIR:-${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}}"
-[ -d "$KERNEL_DIR" ] || KERNEL_DIR="${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}"
+KERNEL_DIR="${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}"
 KERNEL="$KERNEL_DIR/davinci.sh"
-[[ -f "$KERNEL" ]] || KERNEL="$KERNEL_DIR/davinci.sh"
 if [[ -x "$HOME/.local/bin/davinci" ]]; then
-    ( "$HOME/.local/bin/davinci" thumbs >/dev/null 2>&1 & )
-elif [[ -x "$HOME/.local/bin/davinci" ]]; then
     ( "$HOME/.local/bin/davinci" thumbs >/dev/null 2>&1 & )
 elif [[ -x "$KERNEL" ]]; then
     ( bash "$KERNEL" thumbs >/dev/null 2>&1 & )
-elif have davinci; then
-    ( davinci thumbs >/dev/null 2>&1 & )
 elif have davinci; then
     ( davinci thumbs >/dev/null 2>&1 & )
 else

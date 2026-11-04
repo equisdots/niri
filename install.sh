@@ -144,7 +144,7 @@ OPT_DEBIAN=(satty gpu-screen-recorder-cli mpvpaper rofi-emoji starship bibata-cu
 # codes, and `gpu-screen-recorder` is the SAME screen recorder Hyprland uses
 # (driven by niri/scripts/niri_record.sh; compositor-agnostic, wlr-screencopy).
 #
-# `qt6-multimedia` is not optional: DavincixPicker.qml and DavincixCard.qml
+# `qt6-multimedia` is not optional: DavinciPicker.qml and DavinciCard.qml
 # import QtMultimedia, so without the QML module the whole wallpaper picker
 # fails to load (StackView replace: module "QtMultimedia" is not installed).
 # `inotify-tools` drives the live settings/widget watchers and `socat` feeds
@@ -576,8 +576,8 @@ check_shared_payload() {
         || warn "Quickshell payload missing at $dir/quickshell (provided by niri-meta)."
 }
 
-# The wallpaper picker (DavincixPicker.qml) and the video previews
-# (DavincixCard.qml) import QtMultimedia. When the QML module is missing the
+# The wallpaper picker (DavinciPicker.qml) and the video previews
+# (DavinciCard.qml) import QtMultimedia. When the QML module is missing the
 # whole picker fails to instantiate and Super+W appears to do nothing.
 qt_multimedia_present() {
     local root
