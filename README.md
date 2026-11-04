@@ -54,7 +54,7 @@ provided by the `niri-meta` deploy, not by this repository.
 ## User app configs
 
 `install.sh` runs `scripts/install-app-configs.sh` on a full install: kitty,
-starship, nvim, xtop, xfetch (latest release, checksum-verified), Hack Nerd Font
+starship, nvim, xtop and xfetch (latest releases, checksum-verified), Hack Nerd Font
 (user + system-wide for SDDM), the interactive scenes and an optional wallpaper
 pack. `--no-apps` (or `DOTSNIRI_NO_*` for automation) skips individual steps.
 Rofi/cava configs are deployed from `config/apps/` by the installer and
