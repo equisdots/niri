@@ -54,7 +54,10 @@ read_answer() {
     if [[ "$ASSUME_YES" == "1" ]]; then
         printf -v "$var" '%s' "$def"
     else
-        read -r "$var"
+        if ! read -r "$var"; then
+            printf -v "$var" '%s' "$def"
+            info "no input (EOF); using default: ${var}=${def}"
+        fi
     fi
 }
 

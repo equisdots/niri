@@ -81,7 +81,7 @@ if (( DRY_RUN )); then
     (( DO_KITTY )) && log "  - clone xscriptor-colors/terminal and run emulators/kitty/install.sh"
     (( DO_STARSHIP )) && log "  - clone xscriptor-colors/terminal and run prompts/starship/install.sh"
     (( DO_NVIM )) && log "  - clone xscriptor-colors/nvim -> $CONFIG_DIR/nvim (existing: $([[ -d "$CONFIG_DIR/nvim" ]] && echo keep || echo create))"
-    (( DO_XTOP )) && log "  - build/install xtop -> $HOME/.local/bin/xtop"
+    (( DO_XTOP )) && log "  - install xtop (latest release) -> $HOME/.local/bin/xtop"
     (( DO_XFETCH )) && log "  - install xfetch (latest release) -> $HOME/.local/bin/xfetch"
     (( DO_SCENES )) && log "  - copy equisdots/background scenes -> $(wallpaper_dir)"
     (( DO_SYSTEM_FONT )) && log "  - install Hack Nerd Font system-wide (/usr/share/fonts, sudo)"
@@ -256,21 +256,20 @@ install_starship() {
 
 install_xtop() {
     local script="$SCRIPT_DIR/install-xtop.sh"
-    if have xtop; then
-        mkdir -p "$HOME/.config/xtop/themes"
-        log "xtop already installed: $(command -v xtop)"
-        return 0
-    fi
     [[ -x "$script" ]] || { warn "install-xtop.sh not found; skipping xtop"; return 0; }
-    log "installing xtop (cargo build)"
-    bash "$script" || warn "xtop install failed (non-fatal; theme-sync will skip it)"
-    mkdir -p "$HOME/.config/xtop/themes"
+    log "checking xtop (latest release, checksum-verified)"
+    if bash "$script"; then
+        mkdir -p "$HOME/.config/xtop/themes"
+    else
+        warn "xtop install failed (non-fatal; theme-sync will skip it)"
+    fi
+    return 0
 }
 
 install_xfetch() {
     local script="$SCRIPT_DIR/install-xfetch.sh"
     [[ -x "$script" ]] || { warn "install-xfetch.sh not found; skipping xfetch"; return 0; }
-    log "installing xfetch (latest release, checksum-verified)"
+    log "checking xfetch (latest release, checksum-verified)"
     if bash "$script"; then
         mkdir -p "$HOME/.config/xfetch"
     else
