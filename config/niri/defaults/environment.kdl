@@ -56,7 +56,7 @@ environment {
     MOZ_DBUS_REMOTE "1"
 
     // --- Paths (literal at install time; niri cannot expand $HOME) --------
-    // PATH puts ~/.local/bin first, where dots/davincix/theme-sync wrappers and
+    // PATH puts ~/.local/bin first, where dots/davinci/theme-sync wrappers and
     // the scene-capable xwww build live.
     PATH "@SESSION_PATH@"
     WALLPAPER_DIR "@WALLPAPER_DIR@"
