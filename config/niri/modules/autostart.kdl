@@ -35,7 +35,7 @@ spawn-sh-at-startup "systemctl --user import-environment WAYLAND_DISPLAY XDG_CUR
 // Kill leftover shells from a previous session.
 spawn-sh-at-startup "pkill -f 'quickshell.*Shell.qml' 2>/dev/null || true"
 
-// Wallpaper daemon (xwww; the shared davincix/xwww kernel under ~/.config/hypr).
+// Wallpaper daemon (xwww; the shared davinci/xwww kernel under ~/.config/hypr).
 spawn-sh-at-startup "xwww-daemon"
 
 // Quickshell: single entry point (Shell.qml loads Main + TopBar + Floating).

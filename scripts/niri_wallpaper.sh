@@ -3,7 +3,7 @@
 # niri_wallpaper.sh - open the wallpaper picker and prepare its thumbnails
 # ============================================================================
 # Niri counterpart of `qs_manager.sh toggle wallpaper`, without depending on
-# the shared Hyprland script. It runs davincix thumbs first and then toggles the
+# the shared Hyprland script. It runs davinci thumbs first and then toggles the
 # picker through the shell IPC. Super+W keeps the same chord.
 # ============================================================================
 
@@ -16,15 +16,22 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/caching.sh"
 qs_ensure_cache "wallpaper_picker"
 
-KERNEL="${DAVINCIX_KERNEL_DIR:-$HOME/.local/share/equisdots/davincix}/davincix.sh"
-if [[ -x "$HOME/.local/bin/davincix" ]]; then
-    ( "$HOME/.local/bin/davincix" thumbs >/dev/null 2>&1 & )
+KERNEL_DIR="${DAVINCI_KERNEL_DIR:-${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}}"
+[ -d "$KERNEL_DIR" ] || KERNEL_DIR="${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}"
+KERNEL="$KERNEL_DIR/davinci.sh"
+[[ -f "$KERNEL" ]] || KERNEL="$KERNEL_DIR/davinci.sh"
+if [[ -x "$HOME/.local/bin/davinci" ]]; then
+    ( "$HOME/.local/bin/davinci" thumbs >/dev/null 2>&1 & )
+elif [[ -x "$HOME/.local/bin/davinci" ]]; then
+    ( "$HOME/.local/bin/davinci" thumbs >/dev/null 2>&1 & )
 elif [[ -x "$KERNEL" ]]; then
     ( bash "$KERNEL" thumbs >/dev/null 2>&1 & )
-elif have davincix; then
-    ( davincix thumbs >/dev/null 2>&1 & )
+elif have davinci; then
+    ( davinci thumbs >/dev/null 2>&1 & )
+elif have davinci; then
+    ( davinci thumbs >/dev/null 2>&1 & )
 else
-    warn "davincix not found; the picker will show an empty grid"
+    warn "davinci not found; the picker will show an empty grid"
 fi
 
 QML="$HOME/.config/hypr/scripts/quickshell/Shell.qml"

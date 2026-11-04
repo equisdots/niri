@@ -15,9 +15,9 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
 
 - `scripts/niri_wallpaper.sh` + `Super+W`: the wallpaper picker no longer
   depends on the shared `qs_manager.sh`; the niri wrapper runs
-  `davincix thumbs`, starts Quickshell if needed and toggles the picker over
+  `davinci thumbs`, starts Quickshell if needed and toggles the picker over
   IPC. `scripts/niri_wallpaper_doctor.sh` prints the resolved wallpaper dir,
-  scene/media counts, davincix/kernel/thumbs/font tools for field debugging.
+  scene/media counts, davinci/kernel/thumbs/font tools for field debugging.
 - `install-app-configs.sh` creates `~/.config/xtop/themes` when xtop is
   already installed, so theme-sync's xtop target is available and applies the
   palette (it previously skipped because the themes directory did not exist).
@@ -41,7 +41,7 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
   terminals and sets both columns to 50% for a side-by-side pair. `Super+Ctrl+R`
   and `Super+Ctrl+Shift+R` cycle the preset column widths forward/back.
 - `install.sh`: package parity with the Hyprland installer. Core now includes
-  `qt6-multimedia` (required by the davincix wallpaper picker/video previews),
+  `qt6-multimedia` (required by the davinci wallpaper picker/video previews),
   `inotify-tools` (live settings/widget watchers), `socat` (nyx IPC), PipeWire
   ALSA/pulse, NetworkManager/BlueZ, Qt5/Qt6 Wayland, GVfs/libsecret,
   `lm_sensors`, `iw`, `librsvg`, CJK fonts, `rofi-emoji`, `xdg-utils`,
@@ -59,7 +59,7 @@ path. The keybinds and autostart are now at parity with Hyprland HEAD
   (`--no-apps` skips it) and `niri-meta` calls it on `install`.
 - `scripts/install-app-configs.sh`: install xtop (built from
   `xtop-cli/xtop` with cargo) so theme-sync can theme it, copy the interactive
-  wallpaper scenes from the `background` clone into the davincix wallpaper
+  wallpaper scenes from the `background` clone into the davinci wallpaper
   directory, optionally download a still-wallpaper pack
   (`WALLPAPERS_PACK`/`wallpapers.sh`), and install Hack Nerd Font
   **system-wide** (`/usr/share/fonts`) for SDDM/login. `rust`/`cargo` is in the
