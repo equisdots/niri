@@ -31,11 +31,9 @@ else
     echo "dir exists:      NO"
 fi
 echo "WALLPAPER_DIR:   ${WALLPAPER_DIR:-<unset>}"
-echo "davinci:         $(command -v davinci 2>/dev/null || command -v davinci 2>/dev/null || echo '<missing>')"
-KERNEL_DIR="${DAVINCI_KERNEL_DIR:-${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}}"
-[ -d "$KERNEL_DIR" ] || KERNEL_DIR="${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}"
+echo "davinci:         $(command -v davinci 2>/dev/null || echo '<missing>')"
+KERNEL_DIR="${DAVINCI_KERNEL_DIR:-$HOME/.local/share/equisdots/davinci}"
 KERNEL="$KERNEL_DIR/davinci.sh"
-[[ -f "$KERNEL" ]] || KERNEL="$KERNEL_DIR/davinci.sh"
 echo "kernel:          $KERNEL"
 [[ -x "$KERNEL" ]] && echo "kernel:          executable" || echo "kernel:          missing/not executable"
 echo "thumbs:          $(find "$QS_CACHE_WALLPAPER_PICKER/thumbs" -type f 2>/dev/null | wc -l)"

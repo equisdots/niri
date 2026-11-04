@@ -354,8 +354,8 @@ valid alternative rather than dropped silently.
   `socat`, `satty`, `zbar` and `gpu-screen-recorder`. AUR-only extras
   installed through the helper: `mpvpaper` (video wallpapers) and Bibata
   cursors; `envycontrol` is installed by niri-meta's NVIDIA step.
-- `qt6-multimedia` is **required**, not optional: `DavincixPicker.qml` and
-  `DavincixCard.qml` import `QtMultimedia`, and without the QML module the
+- `qt6-multimedia` is **required**, not optional: `DavinciPicker.qml` and
+  `DavinciCard.qml` import `QtMultimedia`, and without the QML module the
   wallpaper picker fails to load (`module "QtMultimedia" is not installed`).
 - On Arch, `install.sh` ensures an AUR helper exactly like the Hyprland
   installer: it prefers `paru`, then `yay`, and builds `yay` from the AUR with
